@@ -490,7 +490,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
 <div class="page active" id="page-home">
   <div class="home-hero">
     <div>
-      <div class="hero-eyebrow">&gt;_ OSINT Intelligence Platform By CordCat</div>
+      <div class="hero-eyebrow">&gt;_ OSINT Intelligence Platform</div>
       <h1>Trace any<br><span class="dim">identity</span><br>in seconds.</h1>
       <p class="hero-lead">Discord IDs et adresses IP résolus instantanément. Profil complet, géolocalisation, ASN, badges — une requête, un résultat.</p>
       <div class="mode-cards">
@@ -768,10 +768,20 @@ document.getElementById('query-input').addEventListener('keydown',e=>{if(e.key==
 async function runLookup(){
   const q=document.getElementById('query-input').value.trim();
   if(!q)return;
+
+  // ── Auth check ──
+  const session=getSession();
+  if(!session){
+    document.getElementById('auth-overlay').style.display='flex';
+    return;
+  }
+  // ── Permission check (depuis cache session) ──
+  const perms=session.permissions||{};
+  if(mode==='discord'&&!perms.discord){showPermError('Discord Lookup');return;}
+  if(mode==='ip'&&!perms.ip){showPermError('IP Lookup');return;}
+
   const btn=document.getElementById('lookup-btn');
   btn.disabled=true;btn.textContent='...';
-
-  // Aller sur la page résultat et afficher le loading
   goTo('result');
   document.getElementById('result-content').innerHTML=`
     <div class="result-loading">
@@ -782,14 +792,29 @@ async function runLookup(){
   try{
     const cfg=API_CONFIG[mode];
     const url=cfg.url.replace('{query}',encodeURIComponent(q));
-    const r=await fetch(url,{method:cfg.method,headers:cfg.headers});
+    // Envoie la clé API VoidTrace dans les headers
+    const headers={...cfg.headers,'X-VT-Key':session.apiKey,'X-VT-User':session.username};
+    const r=await fetch(url,{method:cfg.method,headers});
     const data=await r.json();
-    trackUsage();mode==='discord'?renderDiscord(q,data,r.status):renderIP(q,data,r.status);
+    trackUsage();
+    mode==='discord'?renderDiscord(q,data,r.status):renderIP(q,data,r.status);
   }catch(e){
     document.getElementById('result-content').innerHTML=`
-      <div class="result-error">⚠ ${esc(e.message||'Échec de la requête')}<span>Vérifiez que le proxy est lancé et que la requête est valide.</span></div>`;
+      <div class="result-error">⚠ ${esc(e.message||'Échec de la requête')}<span>Vérifiez que le proxy Python est lancé : <code style="font-family:var(--mono)">python proxy.py</code></span></div>`;
   }
   btn.disabled=false;btn.textContent='Rechercher →';
+}
+
+function showPermError(type){
+  goTo('result');
+  document.getElementById('result-content').innerHTML=`<div class="result-error">
+    ⚠ Permission refusée — ${esc(type)} non activé
+    <span>Contactez l'administrateur pour obtenir l'accès.</span>
+    <div style="margin-top:16px;display:flex;gap:10px;justify-content:center">
+      <button onclick="goTo('dashboard')" style="padding:8px 20px;background:var(--glass);color:var(--text);border:1px solid var(--glass-border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Mon Dashboard</button>
+      <a href="mailto:zzzrk61@gmail.com?subject=Demande%20permission%20${encodeURIComponent(type)}&body=Bonjour%2C%20je%20souhaite%20activer%20l'acc%C3%A8s%20${encodeURIComponent(type)}%20pour%20mon%20compte." style="padding:8px 20px;background:var(--accent);color:#04101c;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none">Contacter l'admin →</a>
+    </div>
+  </div>`;
 }
 
 function renderDiscord(q,data,status){
@@ -1189,29 +1214,14 @@ function scrollDoc(id){
 }
 
 // ════ AUTH SYSTEM ════
-const ADMIN_USERNAME = 'zzzrk61'; // TON username admin
+// Tout passe par le proxy — localStorage = cache session uniquement
 
-function hashPass(p){
-  // Simple hash (pour vraie prod utiliser bcrypt côté serveur)
-  let h=0;for(let i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h|=0;}
-  return 'h'+Math.abs(h).toString(36)+p.length.toString(36);
-}
-function genApiKey(username){
-  const rand=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
-  return 'vt_'+username.slice(0,4)+'_'+rand;
-}
-function getUsers(){return JSON.parse(localStorage.getItem('vt_users')||'{}')}
-function saveUsers(u){localStorage.setItem('vt_users',JSON.stringify(u))}
-function getCurrentUser(){return JSON.parse(localStorage.getItem('vt_session')||'null')}
+function getSession(){return JSON.parse(localStorage.getItem('vt_session')||'null')}
 function saveSession(u){localStorage.setItem('vt_session',JSON.stringify(u))}
 function clearSession(){localStorage.removeItem('vt_session')}
 
-const PLANS={
-  free:{label:'Free',dailyLimit:100,color:'var(--text-dim)'},
-  pro:{label:'Pro',dailyLimit:10000,color:'var(--accent)'},
-  enterprise:{label:'Enterprise',dailyLimit:999999,color:'var(--yellow)'}
-};
-const DEFAULT_PERMS={discord:false,ip:false,fivem:false,breach:false};
+const PLANS_LIMITS={free:100,pro:10000,enterprise:999999};
+const PLANS_LABELS={free:{label:'Free',color:'var(--text-dim)'},pro:{label:'Pro',color:'var(--accent)'},enterprise:{label:'Enterprise',color:'var(--yellow)'}};
 
 function authTab(t){
   document.getElementById('tab-login').classList.toggle('active',t==='login');
@@ -1220,108 +1230,86 @@ function authTab(t){
   document.getElementById('form-register').style.display=t==='register'?'block':'none';
 }
 
-function doRegister(){
+async function doRegister(){
   const u=document.getElementById('reg-user').value.trim().toLowerCase();
   const p=document.getElementById('reg-pass').value;
   const p2=document.getElementById('reg-pass2').value;
   const err=document.getElementById('reg-err');
   const ok=document.getElementById('reg-ok');
   err.textContent='';ok.textContent='';
-  if(!u||u.length<3){err.textContent='Username minimum 3 caractères';return}
-  if(!/^[a-z0-9_]+$/.test(u)){err.textContent='Username: lettres, chiffres et _ uniquement';return}
-  if(p.length<6){err.textContent='Mot de passe minimum 6 caractères';return}
   if(p!==p2){err.textContent='Les mots de passe ne correspondent pas';return}
-  const users=getUsers();
-  if(users[u]){err.textContent='Ce username est déjà pris';return}
-  const isAdmin=(u===ADMIN_USERNAME);
-  users[u]={
-    username:u,
-    password:hashPass(p),
-    apiKey:genApiKey(u),
-    plan:'free',
-    permissions:{discord:isAdmin,ip:isAdmin,fivem:isAdmin,breach:isAdmin},
-    isAdmin,
-    createdAt:Date.now(),
-    reqToday:0,
-    reqTotal:0,
-    lastReqDay:new Date().toDateString()
-  };
-  saveUsers(users);
-  ok.textContent='Compte créé ! Connexion en cours…';
-  setTimeout(()=>{
-    document.getElementById('login-user').value=u;
-    authTab('login');
-    doLogin(u,p);
-  },1000);
+  try{
+    const r=await fetch('/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const data=await r.json();
+    if(!data.ok){err.textContent=data.error;return}
+    ok.textContent='Compte créé ! Connexion en cours…';
+    setTimeout(()=>{
+      document.getElementById('login-user').value=u;
+      document.getElementById('login-pass').value=p;
+      authTab('login');
+      doLogin();
+    },800);
+  }catch(e){err.textContent='Erreur : proxy non disponible'}
 }
 
-function doLogin(u,p){
-  const username=(u||document.getElementById('login-user').value.trim().toLowerCase());
-  const password=(p||document.getElementById('login-pass').value);
+async function doLogin(forceU,forceP){
+  const u=forceU||document.getElementById('login-user').value.trim().toLowerCase();
+  const p=forceP||document.getElementById('login-pass').value;
   const err=document.getElementById('login-err');
-  if(err) err.textContent='';
-  const users=getUsers();
-  const user=users[username];
-  if(!user||user.password!==hashPass(password)){
-    if(err) err.textContent='Username ou mot de passe incorrect';
-    return;
-  }
-  // Reset daily count if new day
-  if(user.lastReqDay!==new Date().toDateString()){
-    user.reqToday=0;user.lastReqDay=new Date().toDateString();
-    users[username]=user;saveUsers(users);
-  }
-  saveSession(user);
-  document.getElementById('auth-overlay').style.display='none';
-  updateNavUser(user);
-  updateDashboard(user);
+  if(err)err.textContent='';
+  try{
+    const r=await fetch('/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const data=await r.json();
+    if(!data.ok){if(err)err.textContent=data.error;return}
+    saveSession(data.user);
+    document.getElementById('auth-overlay').style.display='none';
+    updateNavUser(data.user);
+    updateDashboard(data.user);
+  }catch(e){if(err)err.textContent='Erreur connexion — proxy non disponible'}
 }
 
-function doLogout(){
-  clearSession();
-  location.reload();
-}
+function doLogout(){clearSession();location.reload()}
 
-function toggleUserMenu(){
-  document.getElementById('user-dropdown').classList.toggle('open');
-}
-function closeUserMenu(){
-  document.getElementById('user-dropdown').classList.remove('open');
-}
+function toggleUserMenu(){document.getElementById('user-dropdown').classList.toggle('open')}
+function closeUserMenu(){document.getElementById('user-dropdown').classList.remove('open')}
 document.addEventListener('click',e=>{
-  if(!document.getElementById('user-menu-wrap').contains(e.target)) closeUserMenu();
+  const w=document.getElementById('user-menu-wrap');
+  if(w&&!w.contains(e.target))closeUserMenu();
 });
 
 function updateNavUser(user){
   document.getElementById('nav-avatar').textContent=user.username.charAt(0).toUpperCase();
   document.getElementById('nav-username').textContent=user.username;
   document.getElementById('dd-username').textContent=user.username;
-  const plan=PLANS[user.plan]||PLANS.free;
+  const plan=PLANS_LABELS[user.plan]||PLANS_LABELS.free;
   document.getElementById('dd-plan').textContent=plan.label;
   document.getElementById('dd-plan').style.color=plan.color;
   if(user.isAdmin){
     document.getElementById('admin-menu-item').style.display='flex';
-    document.getElementById('nav-admin-link').style.display='';
+    const al=document.getElementById('nav-admin-link');
+    if(al)al.style.display='';
   }
 }
 
 function updateDashboard(user){
-  const plan=PLANS[user.plan]||PLANS.free;
+  const plan=PLANS_LABELS[user.plan]||PLANS_LABELS.free;
+  const limit=PLANS_LIMITS[user.plan]||100;
   document.getElementById('dash-welcome').textContent=`Bienvenue, ${user.username}`;
   const badge=document.getElementById('dash-plan-badge');
-  badge.innerHTML=`<span style="font-size:11px;font-family:var(--mono);font-weight:700;padding:5px 14px;border-radius:99px;background:${plan.color === 'var(--text-dim)' ? 'rgba(255,255,255,.06)' : 'rgba(62,166,255,.1)'};color:${plan.color};border:1px solid ${plan.color === 'var(--text-dim)' ? 'rgba(255,255,255,.1)' : 'rgba(62,166,255,.25)'}">${plan.label.toUpperCase()}</span>`;
+  const bc=user.plan==='free'?'rgba(255,255,255,.06)':user.plan==='pro'?'rgba(62,166,255,.1)':'rgba(255,184,0,.1)';
+  const bb=user.plan==='free'?'rgba(255,255,255,.1)':user.plan==='pro'?'rgba(62,166,255,.25)':'rgba(255,184,0,.25)';
+  badge.innerHTML=`<span style="font-size:11px;font-family:var(--mono);font-weight:700;padding:5px 14px;border-radius:99px;background:${bc};color:${plan.color};border:1px solid ${bb}">${plan.label.toUpperCase()}</span>`;
   document.getElementById('dash-req-today').textContent=user.reqToday||0;
   document.getElementById('dash-req-total').textContent=user.reqTotal||0;
-  document.getElementById('dash-req-limit').textContent=`/ ${plan.dailyLimit.toLocaleString()} requêtes`;
-  document.getElementById('dash-api-key').textContent=user.apiKey;
-  // Usage bar
-  const pct=Math.min(100,((user.reqToday||0)/plan.dailyLimit)*100);
-  document.getElementById('usage-bar-fill').style.width=pct+'%';
-  document.getElementById('usage-bar-fill').style.background=pct>80?'var(--red)':pct>50?'var(--yellow)':'var(--green)';
+  document.getElementById('dash-req-limit').textContent=`/ ${limit===999999?'∞':limit.toLocaleString()} requêtes`;
+  document.getElementById('dash-api-key').textContent=user.apiKey||'—';
+  const pct=limit===999999?0:Math.min(100,((user.reqToday||0)/limit)*100);
+  const fill=document.getElementById('usage-bar-fill');
+  fill.style.width=pct+'%';
+  fill.style.background=pct>80?'var(--red)':pct>50?'var(--yellow)':'var(--green)';
   document.getElementById('usage-label-left').textContent=`${user.reqToday||0} requêtes utilisées`;
-  document.getElementById('usage-label-right').textContent=`${Math.max(0,plan.dailyLimit-(user.reqToday||0)).toLocaleString()} restantes`;
-  // Permissions
-  const perms=user.permissions||DEFAULT_PERMS;
+  document.getElementById('usage-label-right').textContent=limit===999999?'Illimité':`${Math.max(0,limit-(user.reqToday||0)).toLocaleString()} restantes`;
+  const perms=user.permissions||{};
   ['discord','ip','fivem','breach'].forEach(k=>{
     const el=document.getElementById('perm-'+k);
     if(!el)return;
@@ -1330,104 +1318,129 @@ function updateDashboard(user){
   });
 }
 
-function copyApiKey(){
+async function copyApiKey(){
   const key=document.getElementById('dash-api-key').textContent;
-  navigator.clipboard.writeText(key);
+  await navigator.clipboard.writeText(key);
   const btn=document.querySelector('.api-copy-btn');
   btn.textContent='Copié !';setTimeout(()=>btn.textContent='Copier',2000);
 }
 
-function regenKey(){
-  const session=getCurrentUser();if(!session)return;
+async function regenKey(){
+  const session=getSession();if(!session)return;
   if(!confirm('Régénérer votre clé API ? L\'ancienne ne fonctionnera plus.'))return;
-  const users=getUsers();
-  const user=users[session.username];if(!user)return;
-  user.apiKey=genApiKey(user.username);
-  users[session.username]=user;saveUsers(users);
-  saveSession(user);
-  document.getElementById('dash-api-key').textContent=user.apiKey;
+  try{
+    const r=await fetch('/auth/regen-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apiKey:session.apiKey})});
+    const data=await r.json();
+    if(!data.ok){alert(data.error);return}
+    session.apiKey=data.apiKey;
+    saveSession(session);
+    document.getElementById('dash-api-key').textContent=data.apiKey;
+  }catch(e){alert('Erreur proxy')}
 }
 
-// ── ADMIN functions ──
-function loadAdmin(){
-  const users=getUsers();
-  const tbody=document.getElementById('admin-tbody');
-  const keys=Object.keys(users);
-  document.getElementById('admin-user-count').textContent=keys.length+' compte'+(keys.length>1?'s':'');
-  tbody.innerHTML=keys.map(k=>{
-    const u=users[k];
-    const p=u.permissions||DEFAULT_PERMS;
-    const plan=PLANS[u.plan]||PLANS.free;
-    return `<tr>
-      <td><span style="font-family:var(--mono);font-weight:700;color:#fff">${esc(u.username)}</span>${u.isAdmin?` <span class="admin-badge">ADMIN</span>`:''}</td>
-      <td><select class="plan-select" onchange="adminSetPlan('${k}',this.value)">
-        <option value="free" ${u.plan==='free'?'selected':''}>Free</option>
-        <option value="pro" ${u.plan==='pro'?'selected':''}>Pro</option>
-        <option value="enterprise" ${u.plan==='enterprise'?'selected':''}>Enterprise</option>
-      </select></td>
-      <td><label class="toggle-switch"><input type="checkbox" ${p.discord?'checked':''} onchange="adminSetPerm('${k}','discord',this.checked)"><span class="toggle-slider"></span></label></td>
-      <td><label class="toggle-switch"><input type="checkbox" ${p.ip?'checked':''} onchange="adminSetPerm('${k}','ip',this.checked)"><span class="toggle-slider"></span></label></td>
-      <td><label class="toggle-switch"><input type="checkbox" ${p.fivem?'checked':''} onchange="adminSetPerm('${k}','fivem',this.checked)"><span class="toggle-slider"></span></label></td>
-      <td><label class="toggle-switch"><input type="checkbox" ${p.breach?'checked':''} onchange="adminSetPerm('${k}','breach',this.checked)"><span class="toggle-slider"></span></label></td>
-      <td style="font-family:var(--mono);color:var(--text-dim)">${u.reqToday||0}</td>
-      <td style="font-family:var(--mono);color:var(--text-dim)">${u.reqTotal||0}</td>
-      <td><span onclick="adminDeleteUser('${k}')" style="cursor:pointer;color:var(--red);font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid rgba(255,61,90,.2);background:rgba(255,61,90,.06)">Supprimer</span></td>
-    </tr>`;
-  }).join('');
+// ── ADMIN ──
+async function loadAdmin(){
+  const session=getSession();if(!session||!session.isAdmin)return;
+  try{
+    const r=await fetch('/admin/users',{headers:{'X-VT-Key':session.apiKey}});
+    const data=await r.json();
+    if(!data.ok)return;
+    const users=data.users;
+    const keys=Object.keys(users);
+    document.getElementById('admin-user-count').textContent=keys.length+' compte'+(keys.length>1?'s':'');
+    document.getElementById('admin-tbody').innerHTML=keys.map(k=>{
+      const u=users[k];
+      const p=u.permissions||{};
+      return `<tr>
+        <td><span style="font-family:var(--mono);font-weight:700;color:#fff">${esc(u.username)}</span>${u.isAdmin?` <span class="admin-badge">ADMIN</span>`:''}</td>
+        <td><select class="plan-select" onchange="adminSetPlan('${k}',this.value)">
+          <option value="free" ${u.plan==='free'?'selected':''}>Free</option>
+          <option value="pro" ${u.plan==='pro'?'selected':''}>Pro</option>
+          <option value="enterprise" ${u.plan==='enterprise'?'selected':''}>Enterprise</option>
+        </select></td>
+        <td><label class="toggle-switch"><input type="checkbox" ${p.discord?'checked':''} onchange="adminSetPerm('${k}','discord',this.checked)"><span class="toggle-slider"></span></label></td>
+        <td><label class="toggle-switch"><input type="checkbox" ${p.ip?'checked':''} onchange="adminSetPerm('${k}','ip',this.checked)"><span class="toggle-slider"></span></label></td>
+        <td><label class="toggle-switch"><input type="checkbox" ${p.fivem?'checked':''} onchange="adminSetPerm('${k}','fivem',this.checked)"><span class="toggle-slider"></span></label></td>
+        <td><label class="toggle-switch"><input type="checkbox" ${p.breach?'checked':''} onchange="adminSetPerm('${k}','breach',this.checked)"><span class="toggle-slider"></span></label></td>
+        <td style="font-family:var(--mono);color:var(--text-dim)">${u.reqToday||0}</td>
+        <td style="font-family:var(--mono);color:var(--text-dim)">${u.reqTotal||0}</td>
+        <td><span onclick="adminDeleteUser('${k}')" style="cursor:pointer;color:var(--red);font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid rgba(255,61,90,.2);background:rgba(255,61,90,.06)">Supprimer</span></td>
+      </tr>`;
+    }).join('');
+  }catch(e){console.error('Admin load error',e)}
 }
 
-function adminSetPlan(username,plan){
-  const users=getUsers();if(!users[username])return;
-  users[username].plan=plan;saveUsers(users);
-  // Update session if it's the current user
-  const session=getCurrentUser();
-  if(session&&session.username===username){saveSession(users[username]);updateDashboard(users[username]);}
+async function adminSetPlan(username,plan){
+  const session=getSession();if(!session)return;
+  await fetch('/admin/set-plan',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({adminKey:session.apiKey,username,plan})});
+}
+async function adminSetPerm(username,perm,val){
+  const session=getSession();if(!session)return;
+  await fetch('/admin/set-perm',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({adminKey:session.apiKey,username,perm,val})});
+}
+async function adminDeleteUser(username){
+  if(!confirm(`Supprimer "${username}" ?`))return;
+  const session=getSession();if(!session)return;
+  await fetch('/admin/delete-user',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({adminKey:session.apiKey,username})});
+  loadAdmin();
 }
 
-function adminSetPerm(username,perm,val){
-  const users=getUsers();if(!users[username])return;
-  if(!users[username].permissions)users[username].permissions={...DEFAULT_PERMS};
-  users[username].permissions[perm]=val;saveUsers(users);
-  const session=getCurrentUser();
-  if(session&&session.username===username){saveSession(users[username]);updateDashboard(users[username]);}
-}
-
-function adminDeleteUser(username){
-  if(!confirm(`Supprimer l'utilisateur "${username}" ?`))return;
-  const users=getUsers();delete users[username];saveUsers(users);loadAdmin();
-}
-
-// ── Track usage ──
+// ── Track usage (proxy le fait aussi, on met juste à jour le cache local) ──
 function trackUsage(){
-  const session=getCurrentUser();if(!session)return;
-  const users=getUsers();
-  const user=users[session.username];if(!user)return;
-  if(user.lastReqDay!==new Date().toDateString()){user.reqToday=0;user.lastReqDay=new Date().toDateString();}
-  user.reqToday=(user.reqToday||0)+1;
-  user.reqTotal=(user.reqTotal||0)+1;
-  users[session.username]=user;saveUsers(users);
-  saveSession(user);
+  const session=getSession();if(!session)return;
+  session.reqToday=(session.reqToday||0)+1;
+  session.reqTotal=(session.reqTotal||0)+1;
+  saveSession(session);
 }
 
-// ── Override goTo to load admin ──
+// ── Override goTo ──
 const _origGoTo=goTo;
 goTo=function(page){
   _origGoTo(page);
-  if(page==='admin'){const s=getCurrentUser();if(s&&s.isAdmin)loadAdmin();}
-  if(page==='dashboard'){const s=getCurrentUser();if(s){const users=getUsers();updateDashboard(users[s.username]||s);}}
+  if(page==='admin'){loadAdmin();}
+  if(page==='dashboard'){
+    // Refresh depuis le serveur
+    const s=getSession();
+    if(s){
+      fetch('/auth/me',{headers:{'X-VT-Key':s.apiKey}})
+        .then(r=>r.json()).then(data=>{
+          if(data.ok){saveSession(data.user);updateDashboard(data.user);}
+        }).catch(()=>updateDashboard(s));
+    }
+  }
 };
 
-// ── Init on load ──
+// ── Init ──
 (function init(){
-  const session=getCurrentUser();
-  if(session){
-    document.getElementById('auth-overlay').style.display='none';
-    updateNavUser(session);
+  const session=getSession();
+  if(session&&session.apiKey){
+    // Vérifie la session côté serveur
+    fetch('/auth/me',{headers:{'X-VT-Key':session.apiKey}})
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.ok){
+          saveSession(data.user);
+          document.getElementById('auth-overlay').style.display='none';
+          updateNavUser(data.user);
+        } else {
+          clearSession();
+          document.getElementById('auth-overlay').style.display='flex';
+        }
+      })
+      .catch(()=>{
+        // Proxy offline → on accepte la session cached
+        document.getElementById('auth-overlay').style.display='none';
+        updateNavUser(session);
+      });
   }
-  // Enter key support for auth forms
   document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
   document.getElementById('reg-pass2').addEventListener('keydown',e=>{if(e.key==='Enter')doRegister()});
+  document.getElementById('login-user').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus()});
 })();
+
 
 </script>
 </body>
