@@ -121,12 +121,12 @@ header{
 .admin-table th{font-size:11px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);text-align:left;padding:10px 16px;border-bottom:1px solid var(--glass-border)}
 .admin-table td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
 .admin-table tr:hover td{background:rgba(255,255,255,.02)}
-.toggle-switch{position:relative;width:36px;height:20px;cursor:pointer}
-.toggle-switch input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:10px;transition:.2s}
-.toggle-switch input:checked+.toggle-slider{background:var(--green)}
-.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s}
-.toggle-switch input:checked+.toggle-slider::before{transform:translateX(16px)}
+.toggle-switch{position:relative;display:inline-block;width:42px;height:24px;cursor:pointer;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:12px;transition:.25s;border:1px solid rgba(255,255,255,.08)}
+.toggle-switch input:checked+.toggle-slider{background:var(--green);border-color:rgba(62,224,135,.5)}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.25s;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(18px)}
 .plan-select{background:var(--bg);border:1px solid var(--glass-border);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--text);font-family:var(--mono);outline:none;cursor:pointer}
 .admin-badge{font-size:10px;font-family:var(--mono);font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(255,184,0,.12);color:var(--yellow);border:1px solid rgba(255,184,0,.2)}
 
@@ -1358,10 +1358,10 @@ async function loadAdmin(){
           <option value="pro" ${u.plan==='pro'?'selected':''}>Pro</option>
           <option value="enterprise" ${u.plan==='enterprise'?'selected':''}>Enterprise</option>
         </select></td>
-        <td><label class="toggle-switch"><input type="checkbox" ${p.discord?'checked':''} onchange="adminSetPerm('${k}','discord',this.checked)"><span class="toggle-slider"></span></label></td>
-        <td><label class="toggle-switch"><input type="checkbox" ${p.ip?'checked':''} onchange="adminSetPerm('${k}','ip',this.checked)"><span class="toggle-slider"></span></label></td>
-        <td><label class="toggle-switch"><input type="checkbox" ${p.fivem?'checked':''} onchange="adminSetPerm('${k}','fivem',this.checked)"><span class="toggle-slider"></span></label></td>
-        <td><label class="toggle-switch"><input type="checkbox" ${p.breach?'checked':''} onchange="adminSetPerm('${k}','breach',this.checked)"><span class="toggle-slider"></span></label></td>
+        <td style="text-align:center;vertical-align:middle"><label class="toggle-switch"><input type="checkbox" ${p.discord?'checked':''} onchange="adminSetPerm('${k}','discord',this.checked)"><span class="toggle-slider"></span></label></td>
+        <td style="text-align:center;vertical-align:middle"><label class="toggle-switch"><input type="checkbox" ${p.ip?'checked':''} onchange="adminSetPerm('${k}','ip',this.checked)"><span class="toggle-slider"></span></label></td>
+        <td style="text-align:center;vertical-align:middle"><label class="toggle-switch"><input type="checkbox" ${p.fivem?'checked':''} onchange="adminSetPerm('${k}','fivem',this.checked)"><span class="toggle-slider"></span></label></td>
+        <td style="text-align:center;vertical-align:middle"><label class="toggle-switch"><input type="checkbox" ${p.breach?'checked':''} onchange="adminSetPerm('${k}','breach',this.checked)"><span class="toggle-slider"></span></label></td>
         <td style="font-family:var(--mono);color:var(--text-dim)">${u.reqToday||0}</td>
         <td style="font-family:var(--mono);color:var(--text-dim)">${u.reqTotal||0}</td>
         <td><span onclick="adminDeleteUser('${k}')" style="cursor:pointer;color:var(--red);font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid rgba(255,61,90,.2);background:rgba(255,61,90,.06)">Supprimer</span></td>
