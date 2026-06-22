@@ -384,35 +384,25 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
   </div>
 </div>
 
-<!-- INFO SEARCH MODAL -->
-<div class="info-modal-overlay" id="info-search-modal">
+<!-- INFO MODAL -->
+<div class="info-modal-overlay" id="info-modal-overlay">
   <div class="info-modal">
-    <div class="info-modal-title">Recherche par Identité</div>
-    <div class="info-modal-sub">Entrez au minimum le prénom et/ou le nom</div>
-    <span class="info-modal-close" onclick="closeInfoSearchModal()">✕</span>
+    <div class="info-modal-title">Recherche Info</div>
+    <div class="info-modal-sub" id="info-modal-target">—</div>
+    <span class="info-modal-close" onclick="closeInfoModal()">✕</span>
     <div class="auth-field" style="margin-bottom:10px">
-      <label>Prénom *</label>
-      <input type="text" id="search-prenom" placeholder="ex: Jean" />
+      <label>Prénom</label>
+      <input type="text" id="info-prenom" placeholder="Jean" />
     </div>
     <div class="auth-field">
-      <label>Nom *</label>
-      <input type="text" id="search-nom" placeholder="ex: Dupont" />
+      <label>Nom</label>
+      <input type="text" id="info-nom" placeholder="Dupont" />
     </div>
-    <div class="auth-field">
-      <label>Date de naissance (optionnel)</label>
-      <input type="date" id="search-dob" />
+    <button class="auth-btn" onclick="submitInfo()" style="margin-top:4px">Rechercher →</button>
+    <div id="info-result-wrap" class="info-result">
+      <div id="info-result-inner"></div>
     </div>
-    <div class="auth-field">
-      <label>Ville (optionnel)</label>
-      <input type="text" id="search-ville" placeholder="ex: Paris" />
-    </div>
-    <div class="auth-field">
-      <label>Code postal (optionnel)</label>
-      <input type="text" id="search-cp" placeholder="ex: 75001" />
-    </div>
-    <button class="auth-btn" onclick="submitInfoSearch()" style="margin-top:4px">Rechercher →</button>
-    <div id="info-search-result" style="display:none;margin-top:20px"></div>
-    <div class="auth-err" id="info-search-err"></div>
+    <div class="auth-err" id="info-err"></div>
   </div>
 </div>
 
@@ -541,7 +531,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
       <div class="hero-eyebrow">&gt;_ OSINT Intelligence Platform</div>
       <h1>Trace any<br><span class="dim">identity</span><br>in seconds.</h1>
       <p class="hero-lead">Discord IDs et adresses IP résolus instantanément. Profil complet, géolocalisation, ASN, badges — une requête, un résultat.</p>
-      <div class="mode-cards" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="mode-cards">
         <div class="mode-card active" id="card-discord" onclick="switchMode('discord')">
           <div class="mc-header"><span class="mc-title">Discord ID</span><span class="mc-pill discord">DISCORD</span></div>
           <div class="mc-desc">Profil, avatar, badges Nitro, date de création, flags publics</div>
@@ -550,12 +540,8 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
           <div class="mc-header"><span class="mc-title">IP Address</span><span class="mc-pill ip">IP</span></div>
           <div class="mc-desc">Pays, région, ISP, ASN, détection proxy/VPN, coordonnées GPS</div>
         </div>
-        <div class="mode-card" id="card-info" onclick="switchMode('info')">
-          <div class="mc-header"><span class="mc-title">Nom / Prénom</span><span class="mc-pill" style="background:rgba(167,139,250,.15);color:var(--purple);border:1px solid rgba(167,139,250,.25)">INFO</span></div>
-          <div class="mc-desc">Recherche par identité civile — données compilées</div>
-        </div>
       </div>
-      <div class="search-box" id="search-box-container">
+      <div class="search-box">
         <div class="s-prefix" id="s-prefix">$ discord /</div>
         <input type="text" id="query-input" placeholder="803511102246789120" autocomplete="off" spellcheck="false"/>
         <button id="lookup-btn" onclick="runLookup()">Rechercher →</button>
@@ -588,7 +574,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
     </div>
   </div>
   <div class="home-stats">
-    <div class="hstat"><div class="hstat-num">3</div><div class="hstat-label">Sources directes</div></div>
+    <div class="hstat"><div class="hstat-num">2</div><div class="hstat-label">Sources directes</div></div>
     <div class="hstat"><div class="hstat-num">&lt; 1s</div><div class="hstat-label">Temps de réponse</div></div>
     <div class="hstat"><div class="hstat-num">100%</div><div class="hstat-label">Gratuit</div></div>
     <div class="hstat"><div class="hstat-num">0</div><div class="hstat-label">Compte requis</div></div>
@@ -696,7 +682,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
       <div class="code-block"><span class="v">https://api.voidtrace.io/v1</span></div>
       <h2 id="doc-auth">Authentification</h2>
       <p>Toutes les requêtes nécessitent votre clé API dans le header :</p>
-      <div class="code-block"><span class="k">X-VT-Key</span>: <span class="s">vt_your_api_key_here</span></div>
+      <div class="code-block"><span class="k">X-API-Key</span>: <span class="s">vt_your_api_key_here</span></div>
       <div class="notice">Ne partagez jamais votre clé API. En cas de compromission, régénérez-la depuis votre dashboard.</div>
       <h2 id="doc-rate">Rate Limiting</h2>
       <div class="endpoint-card">
@@ -722,14 +708,14 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
       </div>
       <div class="code-block"><span class="c"># Exemple</span>
 curl -X GET <span class="s">"https://api.voidtrace.io/v1/discord/803511102246789120"</span> \
-  -H <span class="s">"X-VT-Key: vt_your_key"</span></div>
+  -H <span class="s">"X-API-Key: vt_your_key"</span></div>
       <h2 id="doc-ip">IP Lookup</h2>
       <div class="endpoint-card">
         <div><span class="badge-method bm-get">GET</span><span class="ep-url">/ip/{address}</span></div>
       </div>
       <div class="code-block"><span class="c"># Exemple</span>
 curl -X GET <span class="s">"https://api.voidtrace.io/v1/ip/1.1.1.1"</span> \
-  -H <span class="s">"X-VT-Key: vt_your_key"</span></div>
+  -H <span class="s">"X-API-Key: vt_your_key"</span></div>
       <div class="notice warn">Les données de géolocalisation sont indicatives. VoidTrace ne garantit pas la précision à l'échelle d'une adresse physique.</div>
       <h2 id="doc-info">Info Lookup</h2>
       <p>Recherche par nom et prénom via l'API BrixHub. Nécessite la permission <code style="font-family:var(--mono);color:var(--accent)">info</code>.</p>
@@ -738,7 +724,7 @@ curl -X GET <span class="s">"https://api.voidtrace.io/v1/ip/1.1.1.1"</span> \
       </div>
       <div class="code-block"><span class="c"># Exemple</span>
 curl -X GET <span class="s">"https://api.voidtrace.io/api/brix/Jean+Dupont"</span> \
-  -H <span class="s">"X-VT-Key: vt_your_key"</span></div>
+  -H <span class="s">"X-API-Key: vt_your_key"</span></div>
       <div class="notice">La permission <b>Info</b> doit être activée par un administrateur pour accéder à cet endpoint.</div>
     </div>
   </div>
@@ -803,12 +789,10 @@ curl -X GET <span class="s">"https://api.voidtrace.io/api/brix/Jean+Dupont"</spa
 
 <script>
 const API_CONFIG={
-  discord:{url:"/api/discord/{query}",method:"GET"},
-  ip:{url:"/api/ip/{query}",method:"GET"},
-  info:{url:"/api/brix",method:"GET"}
+  discord:{url:"/api/discord/{query}",method:"GET",headers:{}},
+  ip:{url:"/api/ip/{query}",method:"GET",headers:{}}
 };
 let mode='discord';
-const BRIX_API="brix_7CYSOvLuHLJ8ZtnutYuwGEFYEMiV2Rnl469mQcVsJA0kpYeo";
 
 function goTo(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -821,119 +805,84 @@ function switchMode(m){
   mode=m;
   document.getElementById('card-discord').classList.toggle('active',m==='discord');
   document.getElementById('card-ip').classList.toggle('active',m==='ip');
-  document.getElementById('card-info').classList.toggle('active',m==='info');
   const inp=document.getElementById('query-input');
   const pfx=document.getElementById('s-prefix');
   const hint=document.getElementById('mode-hint');
-  const box=document.getElementById('search-box-container');
-  if(m==='discord'){
-    inp.style.display='block';
-    inp.placeholder='803511102246789120';
-    pfx.textContent='$ discord /';
-    hint.textContent='Snowflake Discord · 17 à 20 chiffres';
-    box.style.display='flex';
-  } else if(m==='ip'){
-    inp.style.display='block';
-    inp.placeholder='1.1.1.1';
-    pfx.textContent='$ ip /';
-    hint.textContent='Adresse IPv4 ou IPv6';
-    box.style.display='flex';
-  } else if(m==='info'){
-    inp.style.display='none';
-    pfx.textContent='$ info /';
-    hint.textContent='Recherche par nom et prénom';
-    box.style.display='flex';
-    openInfoSearchModal();
-  }
+  if(m==='discord'){inp.placeholder='803511102246789120';pfx.textContent='$ discord /';hint.textContent='Snowflake Discord · 17 à 20 chiffres'}
+  else{inp.placeholder='1.1.1.1';pfx.textContent='$ ip /';hint.textContent='Adresse IPv4 ou IPv6'}
 }
 
 document.getElementById('query-input').addEventListener('keydown',e=>{if(e.key==='Enter')runLookup()});
 
-// ══ INFO SEARCH MODAL ══
-function openInfoSearchModal(){
-  document.getElementById('info-search-modal').classList.add('open');
+// ══ INFO MODAL ══
+let _infoTarget='';
+function openInfoModal(username){
+  _infoTarget=username;
+  document.getElementById('info-modal-target').textContent='Utilisateur : '+username;
+  document.getElementById('info-prenom').value='';
+  document.getElementById('info-nom').value='';
+  document.getElementById('info-err').textContent='';
+  document.getElementById('info-result-wrap').style.display='none';
+  document.getElementById('info-result-inner').innerHTML='';
+  document.getElementById('info-modal-overlay').classList.add('open');
 }
-function closeInfoSearchModal(){
-  document.getElementById('info-search-modal').classList.remove('open');
+function closeInfoModal(){
+  document.getElementById('info-modal-overlay').classList.remove('open');
 }
-document.getElementById('info-search-modal').addEventListener('click',function(e){
-  if(e.target===this)closeInfoSearchModal();
+document.getElementById('info-modal-overlay').addEventListener('click',function(e){
+  if(e.target===this)closeInfoModal();
 });
 
-async function submitInfoSearch(){
-  const prenom=(document.getElementById('search-prenom').value||'').trim();
-  const nom=(document.getElementById('search-nom').value||'').trim();
-  const dob=document.getElementById('search-dob').value;
-  const ville=(document.getElementById('search-ville').value||'').trim();
-  const cp=(document.getElementById('search-cp').value||'').trim();
-  const err=document.getElementById('info-search-err');
-  const result=document.getElementById('info-search-result');
+async function submitInfo(){
+  const prenom=document.getElementById('info-prenom').value.trim();
+  const nom=document.getElementById('info-nom').value.trim();
+  const err=document.getElementById('info-err');
   err.textContent='';
-  result.style.display='none';
-  
   if(!prenom&&!nom){err.textContent='Entrez au moins un prénom ou un nom.';return;}
-  
   const session=getSession();
   if(!session){err.textContent='Non connecté.';return;}
   const perms=session.permissions||{};
   if(!perms.info){err.textContent='Permission Info non activée.';return;}
 
+  const query=encodeURIComponent([prenom,nom].filter(Boolean).join(' '));
   err.textContent='Recherche…';
   try{
-    const params=new URLSearchParams();
-    if(prenom)params.append('prenom',prenom);
-    if(nom)params.append('nom',nom);
-    if(dob)params.append('dob',dob);
-    if(ville)params.append('ville',ville);
-    if(cp)params.append('cp',cp);
-    
-    const r=await fetch(`/api/brix?${params.toString()}`,{
-      headers:{'X-VT-Key':session.apiKey,'X-VT-User':session.username}
-    });
+    const r=await fetch(`/api/brix/${query}`,{headers:{'X-VT-Key':session.apiKey,'X-VT-User':session.username}});
     const data=await r.json();
     err.textContent='';
-    if(data.ok||data.data){
-      result.innerHTML=renderInfoSearchResults(data.data||data);
-      result.style.display='block';
-      trackUsage();
-      goTo('result');
-      document.getElementById('result-content').innerHTML=`
-        <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:14px;padding:20px">
-          <div style="font-size:13px;color:var(--text-dim);margin-bottom:8px">RECHERCHE INFO EFFECTUÉE</div>
-          <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:16px">Résultats pour ${esc([prenom,nom].filter(Boolean).join(' '))}</div>
-          ${renderInfoSearchResults(data.data||data)}
-        </div>`;
-    } else {
-      err.textContent='Aucun résultat trouvé.';
-    }
+    renderInfoResult(data);
   }catch(e){
     err.textContent='Erreur : '+e.message;
   }
 }
 
-function renderInfoSearchResults(data){
-  if(!data||typeof data!=='object')return'<div style="color:var(--text-dim)">Aucune donnée</div>';
-  return Object.entries(data).map(([k,v])=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px">
-      <span style="color:var(--text-dim)">${esc(k)}</span>
-      <span style="font-family:var(--mono);color:#fff;text-align:right">${esc(typeof v==='object'?JSON.stringify(v):String(v))}</span>
+function renderInfoResult(data){
+  const wrap=document.getElementById('info-result-wrap');
+  const inner=document.getElementById('info-result-inner');
+  wrap.style.display='block';
+  // Affiche la réponse brute de l'API de façon lisible
+  const rows=Object.entries(data).map(([k,v])=>`
+    <div class="info-result-row">
+      <span class="info-result-key">${esc(k)}</span>
+      <span class="info-result-val">${esc(typeof v==='object'?JSON.stringify(v):String(v))}</span>
     </div>`).join('');
+  inner.innerHTML=rows||`<div style="font-size:13px;color:var(--text-dim);text-align:center;padding:8px">Aucun résultat</div>`;
 }
 
 async function runLookup(){
   const q=document.getElementById('query-input').value.trim();
-  if(!q&&mode!=='info')return;
+  if(!q)return;
 
+  // ── Auth check ──
   const session=getSession();
   if(!session){
     document.getElementById('auth-overlay').style.display='flex';
     return;
   }
-  
+  // ── Permission check ──
   const perms=session.permissions||{};
   if(mode==='discord'&&!perms.discord){showPermError('Discord Lookup');return;}
   if(mode==='ip'&&!perms.ip){showPermError('IP Lookup');return;}
-  if(mode==='info'&&!perms.info){showPermError('Info Lookup');return;}
 
   const btn=document.getElementById('lookup-btn');
   btn.disabled=true;btn.textContent='...';
@@ -945,41 +894,13 @@ async function runLookup(){
     </div>`;
 
   try{
-    const headers={'X-VT-Key':session.apiKey,'X-VT-User':session.username};
-    let url,r,data;
-    
-    if(mode==='discord'||mode==='ip'){
-      const cfg=API_CONFIG[mode];
-      url=cfg.url.replace('{query}',encodeURIComponent(q));
-      r=await fetch(url,{method:cfg.method,headers});
-      data=await r.json();
-      trackUsage();
-      mode==='discord'?renderDiscord(q,data,r.status):renderIP(q,data,r.status);
-    } else if(mode==='info'){
-      const prenom=(document.getElementById('search-prenom').value||'').trim();
-      const nom=(document.getElementById('search-nom').value||'').trim();
-      const dob=document.getElementById('search-dob').value;
-      const ville=(document.getElementById('search-ville').value||'').trim();
-      const cp=(document.getElementById('search-cp').value||'').trim();
-      
-      if(!prenom&&!nom){
-        document.getElementById('result-content').innerHTML=`<div class="result-error">⚠ Entrez au moins un prénom ou un nom</div>`;
-        return;
-      }
-      
-      const params=new URLSearchParams();
-      if(prenom)params.append('prenom',prenom);
-      if(nom)params.append('nom',nom);
-      if(dob)params.append('dob',dob);
-      if(ville)params.append('ville',ville);
-      if(cp)params.append('cp',cp);
-      
-      url=`/api/brix?${params.toString()}`;
-      r=await fetch(url,{headers});
-      data=await r.json();
-      trackUsage();
-      renderInfoResult([prenom,nom].filter(Boolean).join(' '),data);
-    }
+    const cfg=API_CONFIG[mode];
+    const url=cfg.url.replace('{query}',encodeURIComponent(q));
+    const headers={...cfg.headers,'X-VT-Key':session.apiKey,'X-VT-User':session.username};
+    const r=await fetch(url,{method:cfg.method,headers});
+    const data=await r.json();
+    trackUsage();
+    mode==='discord'?renderDiscord(q,data,r.status):renderIP(q,data,r.status);
   }catch(e){
     document.getElementById('result-content').innerHTML=`
       <div class="result-error">⚠ ${esc(e.message||'Échec de la requête')}<span>Vérifiez que le proxy Python est lancé : <code style="font-family:var(--mono)">python proxy.py</code></span></div>`;
@@ -987,27 +908,15 @@ async function runLookup(){
   btn.disabled=false;btn.textContent='Rechercher →';
 }
 
-function renderInfoResult(query,data){
-  const rowsHtml=Object.entries(data||{}).map(([k,v])=>`
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px">
-      <span style="color:var(--text-dim);min-width:140px">${esc(k)}</span>
-      <span style="font-family:var(--mono);color:#fff;text-align:right;flex:1">${esc(typeof v==='object'?JSON.stringify(v):String(v))}</span>
-    </div>`).join('');
-
-  document.getElementById('result-content').innerHTML=`
-    <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);letter-spacing:.08em;margin-bottom:6px">RECHERCHE INFO</div>
-    <div style="font-size:24px;font-weight:900;color:#fff;letter-spacing:-.02em;margin-bottom:4px">${esc(query)}</div>
-    <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px">Données compilées et publiques</div>
-    <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden">
-      ${rowsHtml||'<div style="padding:20px;color:var(--text-dim)">Aucun résultat trouvé</div>'}
-    </div>`;
-}
-
 function showPermError(type){
   goTo('result');
   document.getElementById('result-content').innerHTML=`<div class="result-error">
     ⚠ Permission refusée — ${esc(type)} non activé
     <span>Contactez l'administrateur pour obtenir l'accès.</span>
+    <div style="margin-top:16px;display:flex;gap:10px;justify-content:center">
+      <button onclick="goTo('dashboard')" style="padding:8px 20px;background:var(--glass);color:var(--text);border:1px solid var(--glass-border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Mon Dashboard</button>
+      <a href="mailto:zzzrk61@gmail.com?subject=Demande%20permission%20${encodeURIComponent(type)}&body=Bonjour%2C%20je%20souhaite%20activer%20l'acc%C3%A8s%20${encodeURIComponent(type)}%20pour%20mon%20compte." style="padding:8px 20px;background:var(--accent);color:#04101c;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none">Contacter l'admin →</a>
+    </div>
   </div>`;
 }
 
@@ -1022,6 +931,7 @@ function renderDiscord(q,data,status){
   const id=u.id||q;
   const avatar=u.avatar?`https://cdn.discordapp.com/avatars/${id}/${u.avatar}.png?size=256`:null;
   const banner=u.banner?`https://cdn.discordapp.com/banners/${id}/${u.banner}.png?size=600`:null;
+  const accentColor=u.accent_color?'#'+u.accent_color.toString(16).padStart(6,'0'):null;
   const createdAt=snowToDate(id);
   const age=createdAt?timeAgo(createdAt):'—';
   const nitro=u.premium_type>0;
@@ -1034,6 +944,29 @@ function renderDiscord(q,data,status){
   const riskSignals=score.signals||[];
   const riskLabel=riskLevel==='low'?'Risque faible':riskLevel==='medium'?'Risque modéré':'Risque élevé';
   const riskColor=riskLevel==='low'?'var(--green)':riskLevel==='medium'?'var(--yellow)':'var(--red)';
+  const riskBg=riskLevel==='low'?'rgba(62,224,135,.1)':riskLevel==='medium'?'rgba(255,184,0,.1)':'rgba(255,61,90,.1)';
+  const riskBorder=riskLevel==='low'?'rgba(62,224,135,.2)':riskLevel==='medium'?'rgba(255,184,0,.2)':'rgba(255,61,90,.2)';
+  const humanLabel=riskLevel==='low'?'Humain':'Suspect';
+  const humanColor=riskLevel==='low'?'var(--green)':'var(--red)';
+
+  const fivemData=data.fivem?.data||{};
+  const fivemTotal=fivemData.total||0;
+  const fivemResults=fivemData.results||[];
+  const fivemTook=fivemData.took||0;
+
+  const allNames=[...new Set(fivemResults.map(r=>r.name).filter(Boolean))];
+  const allIPs=[...new Set(fivemResults.map(r=>r.ip).filter(Boolean))];
+  const allSteam=[...new Set(fivemResults.map(r=>r.steam).filter(Boolean))];
+  const allLicenses=[...new Set(fivemResults.map(r=>r.license).filter(Boolean))];
+  const allLicenses2=[...new Set(fivemResults.map(r=>r.license2).filter(Boolean))];
+  const allFivemIds=[...new Set(fivemResults.map(r=>r.fivem).filter(Boolean))];
+  const allIpAsn=fivemResults.filter(r=>r.ip_asn).map(r=>({ip:r.ip,asn:r.ip_asn}));
+
+  const breachData=data.breach?.data||{};
+  const breachCount=data.breach?.resultsCount||0;
+
+  const PER_PAGE=5;
+  let fivemPage=1;
 
   const avatarHtml=avatar?`<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='?'" />`:'?';
   const flagBadges=flags.map(f=>`<span class="rbadge rb-flag">${f}</span>`).join('');
@@ -1041,50 +974,266 @@ function renderDiscord(q,data,status){
   const botBadge=isBot?`<span class="rbadge rb-bot">Bot</span>`:'';
   const createdStr=createdAt?createdAt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
 
+  // Check info permission
+  const session=getSession();
+  const hasInfo=(session?.permissions||{}).info;
+
+  function fivemPageHTML(page){
+    const start=(page-1)*PER_PAGE;
+    const slice=fivemResults.slice(start,start+PER_PAGE);
+    const rows=slice.map(r=>{
+      const initials=(r.name||'?').trim().charAt(0).toUpperCase();
+      const idCount=[r.license,r.license2,r.steam,r.fivem,r.ip].filter(Boolean).length;
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.04)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:34px;height:34px;border-radius:50%;background:rgba(62,166,255,.15);border:1px solid rgba(62,166,255,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0">${esc(initials)}</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#fff">${esc(r.name||'—')}</div>
+            <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:2px">⊟ ${esc(r.source_file||'—')}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-family:var(--mono);font-weight:700;padding:3px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-glow)">${idCount} id</span>
+          <span style="cursor:pointer;color:var(--text-dim);font-size:18px" onclick="toggleFivemRow(this)">⌃</span>
+        </div>
+      </div>
+      <div class="fivem-detail" style="display:none;padding:12px 20px 16px;border-bottom:1px solid rgba(255,255,255,.04);background:rgba(62,166,255,.02)">
+        ${r.license?`<div style="display:flex;gap:8px;margin-bottom:6px;font-size:12px"><span style="color:var(--text-dim);min-width:80px">Licence</span><span style="font-family:var(--mono);color:var(--text);word-break:break-all">${esc(r.license)}</span></div>`:''}
+        ${r.license2?`<div style="display:flex;gap:8px;margin-bottom:6px;font-size:12px"><span style="color:var(--text-dim);min-width:80px">Licence 2</span><span style="font-family:var(--mono);color:var(--text);word-break:break-all">${esc(r.license2)}</span></div>`:''}
+        ${r.steam?`<div style="display:flex;gap:8px;margin-bottom:6px;font-size:12px"><span style="color:var(--text-dim);min-width:80px">Steam</span><span style="font-family:var(--mono);color:var(--text)">${esc(r.steam)}</span></div>`:''}
+        ${r.fivem?`<div style="display:flex;gap:8px;margin-bottom:6px;font-size:12px"><span style="color:var(--text-dim);min-width:80px">ID FiveM</span><span style="font-family:var(--mono);color:var(--accent)">${esc(r.fivem)}</span></div>`:''}
+        ${r.ip?`<div style="display:flex;gap:8px;margin-bottom:6px;font-size:12px"><span style="color:var(--text-dim);min-width:80px">IP</span><span style="font-family:var(--mono);color:var(--green)">${esc(r.ip)}</span>${r.ip_asn?`<span style="font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:4px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-glow)">${esc(r.ip_asn.asn)}</span> <span style="font-size:11px;color:var(--text-dim)">${esc(r.ip_asn.organization)} ${esc(r.ip_asn.country)}</span>`:''}</div>`:''}
+        ${r.discord_id?`<div style="display:flex;gap:8px;font-size:12px"><span style="color:var(--text-dim);min-width:80px">Discord ID</span><span style="font-family:var(--mono);color:var(--text)">${esc(r.discord_id)}</span></div>`:''}
+      </div>`;
+    }).join('');
+
+    const totalPages=Math.ceil(fivemResults.length/PER_PAGE);
+    const paginationNums=[];
+    for(let i=1;i<=totalPages;i++){
+      if(i===1||i===totalPages||Math.abs(i-page)<=1){
+        paginationNums.push(`<span onclick="fivemGoPage(${i})" style="cursor:pointer;padding:5px 10px;border-radius:6px;font-size:12px;font-family:var(--mono);${i===page?'background:var(--accent);color:#04101c;font-weight:700':'color:var(--text-dim)'}">${i}</span>`);
+      } else if(Math.abs(i-page)===2){
+        paginationNums.push(`<span style="color:var(--text-dim);font-size:12px">…</span>`);
+      }
+    }
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;font-size:12px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,.04)">
+        <span>Affichage de <b style="color:#fff">${start+1}–${Math.min(start+PER_PAGE,fivemResults.length)}</b> sur <b style="color:#fff">${fivemResults.length}</b> fichiers</span>
+        <span>Page <b style="color:#fff">${page}</b> / ${totalPages}</span>
+      </div>
+      ${rows}
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 20px">
+        <span onclick="fivemGoPage(${page-1})" style="cursor:pointer;padding:5px 12px;border-radius:6px;font-size:12px;color:var(--text-dim);${page===1?'opacity:.3;pointer-events:none':''}">← Précédent</span>
+        ${paginationNums.join('')}
+        <span onclick="fivemGoPage(${page+1})" style="cursor:pointer;padding:5px 12px;border-radius:6px;font-size:12px;color:var(--text-dim);${page===totalPages?'opacity:.3;pointer-events:none':''}">Suivant →</span>
+      </div>`;
+  }
+
+  const profilAgregeHTML=fivemTotal>0?`
+    <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <span style="color:var(--accent);font-size:14px">⊟</span>
+        <span style="font-size:14px;font-weight:700;color:#fff">Profil agrégé</span>
+        <span style="font-size:12px;color:var(--text-dim);margin-left:auto">sur ${fivemTotal} fichier${fivemTotal>1?'s':''}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);letter-spacing:.06em;margin-bottom:8px">NOMS EN JEU</div>
+          ${allNames.slice(0,3).map(n=>`<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">${esc(n)}</div>`).join('')}
+          ${allNames.length>3?`<div style="font-size:12px;color:var(--accent);cursor:pointer;margin-top:4px">+${allNames.length-3} de plus</div>`:''}
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);letter-spacing:.06em;margin-bottom:8px">ADRESSES IP</div>
+          ${allIPs.slice(0,2).map(ip=>{
+            const asnEntry=allIpAsn.find(a=>a.ip===ip);
+            return `<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">${esc(ip)}${asnEntry?`<br><span style="font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:4px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-glow)">${esc(asnEntry.asn.asn)}</span> <span style="font-size:11px;color:var(--text-dim)">${esc(asnEntry.asn.organization)} ${esc(asnEntry.asn.country)}</span>`:''}</div>`;
+          }).join('')}
+          ${allIPs.length===0?`<div style="font-size:13px;color:var(--text-dim)">—</div>`:''}
+        </div>
+        ${allSteam.length?`
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);letter-spacing:.06em;margin-bottom:8px">STEAM</div>
+          ${allSteam.slice(0,2).map(s=>`<div style="font-size:12px;font-family:var(--mono);color:#fff;margin-bottom:4px">${esc(s)}</div>`).join('')}
+        </div>`:''}
+        ${allLicenses.length?`
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);letter-spacing:.06em;margin-bottom:8px">LICENCE</div>
+          ${allLicenses.slice(0,2).map(l=>`<div style="font-size:11px;font-family:var(--mono);color:#fff;margin-bottom:4px;word-break:break-all">${esc(l)}</div>`).join('')}
+        </div>`:''}
+        ${allLicenses2.length?`
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);letter-spacing:.06em;margin-bottom:8px">LICENCE 2</div>
+          ${allLicenses2.slice(0,2).map(l=>`<div style="font-size:11px;font-family:var(--mono);color:#fff;margin-bottom:4px;word-break:break-all">${esc(l)}</div>`).join('')}
+        </div>`:''}
+        ${allFivemIds.length?`
+        <div>
+          <div style="font-size:11px;color:var(--text-dim);letter-spacing:.06em;margin-bottom:8px">ID FIVEM</div>
+          ${allFivemIds.slice(0,2).map(f=>`<div style="font-size:13px;font-family:var(--mono);color:#fff;margin-bottom:4px">${esc(f)}</div>`).join('')}
+        </div>`:''}
+      </div>
+    </div>`:''
+
   const sigHtml=riskSignals.length
-    ? riskSignals.map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px"><span style="width:7px;height:7px;border-radius:50%;background:${s.kind==='good'?'var(--green)':s.kind==='bad'?'var(--red)':'var(--yellow)'}"></span>${esc(s.label)}</div>`).join('')
+    ? riskSignals.map(s=>`<div class="sig-row"><span class="sig-dot" style="background:${s.kind==='good'?'var(--green)':s.kind==='bad'?'var(--red)':'var(--yellow)'}"></span>${esc(s.label)}${s.detail?` — <span style="color:var(--text-dim)">${esc(s.detail)}</span>`:''}</div>`).join('')
     : `<div style="font-size:13px;color:var(--text-dim);padding:6px 0">Aucun signal de risque détecté.</div>`;
 
   document.getElementById('result-content').innerHTML=`
+<style>
+.sig-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;color:var(--text-mid)}
+.sig-row:last-child{border-bottom:none}
+.sig-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sec-card{background:var(--panel);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--glass-border)}
+.sec-title{font-size:14px;font-weight:700;color:#fff}
+.sec-sub{font-size:12px;color:var(--text-dim);margin-top:2px}
+.sec-empty{padding:36px 20px;text-align:center;color:var(--text-dim);font-size:13px}
+.cnt-pill{font-size:11px;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:99px}
+.pill-green{background:rgba(62,224,135,.1);color:var(--green);border:1px solid rgba(62,224,135,.2)}
+.pill-gray{background:rgba(255,255,255,.06);color:var(--text-dim);border:1px solid rgba(255,255,255,.1)}
+.pill-red{background:rgba(255,61,90,.1);color:var(--red);border:1px solid rgba(255,61,90,.2)}
+.pill-accent{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-glow)}
+.fivem-detail{display:none}
+</style>
+
 <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);letter-spacing:.08em;margin-bottom:6px">RECHERCHE</div>
 <div style="font-size:24px;font-weight:900;color:#fff;letter-spacing:-.02em;margin-bottom:4px">
   Profil résolu <span style="color:var(--text-dim);font-weight:400;font-size:18px">sur toutes les sources</span>
 </div>
 <div style="font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-bottom:24px">${esc(id)}</div>
+
+<!-- Sources bar -->
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+  <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px">
+    <div style="width:8px;height:8px;border-radius:50%;background:${breachCount>0?'var(--red)':'var(--green)'};flex-shrink:0"></div>
+    <div><div style="font-size:12px;color:#fff;font-weight:600">Fuites</div><div style="font-size:11px;color:var(--text-dim)">${breachCount}</div></div>
+  </div>
+  <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px">
+    <div style="width:8px;height:8px;border-radius:50%;background:${fivemTotal>0?'var(--yellow)':'var(--text-dim)'};flex-shrink:0"></div>
+    <div><div style="font-size:12px;color:#fff;font-weight:600">Fichiers FiveM</div><div style="font-size:11px;color:var(--text-dim)">${fivemTotal}</div></div>
+  </div>
+  <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px">
+    <div style="width:8px;height:8px;border-radius:50%;background:var(--text-dim);flex-shrink:0"></div>
+    <div><div style="font-size:12px;color:#fff;font-weight:600">Sanctions DSA</div><div style="font-size:11px;color:var(--text-dim)">0</div></div>
+  </div>
+</div>
+
+<!-- Main grid -->
 <div style="display:grid;grid-template-columns:280px 1fr;gap:14px;align-items:start">
-  <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden;padding:16px;text-align:center">
-    <div style="width:60px;height:60px;border-radius:50%;border:3px solid var(--panel);overflow:hidden;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--text-dim);margin:0 auto 10px">
-      ${avatarHtml}
-    </div>
-    <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:4px">${esc(displayName)}</div>
-    <div style="font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-bottom:12px">@${esc(username)}</div>
-    ${nitroBadge||botBadge||flagBadges?`<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:12px">${nitroBadge}${botBadge}${flagBadges}</div>`:''}
-    <div style="background:var(--bg);border:1px solid var(--glass-border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:11px">
-      <div style="color:var(--text-dim);font-family:var(--mono);letter-spacing:.1em;margin-bottom:3px">ID</div>
-      <div style="font-size:11px;font-family:var(--mono);color:var(--accent);word-break:break-all">${esc(id)}</div>
-    </div>
-    <div style="background:var(--bg);border:1px solid var(--glass-border);border-radius:8px;padding:10px 12px;font-size:11px">
-      <div style="color:var(--text-dim);font-family:var(--mono);letter-spacing:.1em;margin-bottom:3px">CRÉÉ LE</div>
-      <div style="font-size:11px;font-family:var(--mono);color:var(--text)">${createdStr}</div>
+
+  <!-- LEFT -->
+  <div class="sec-card">
+    ${banner?`<div style="height:80px;overflow:hidden"><img src="${banner}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.height='0'" /></div>`:''}
+    <div style="padding:16px;${banner?'margin-top:-28px':''}">
+      <div style="width:60px;height:60px;border-radius:50%;border:3px solid var(--panel);overflow:hidden;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--text-dim);margin-bottom:10px">
+        ${avatarHtml}
+      </div>
+      <div style="font-size:16px;font-weight:800;color:#fff">${esc(displayName)}</div>
+      <div style="font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-bottom:8px">@${esc(username)}</div>
+      ${nitroBadge||botBadge||flagBadges?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">${nitroBadge}${botBadge}${flagBadges}</div>`:''}
+      <div style="background:var(--bg);border:1px solid var(--glass-border);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:9px;color:var(--text-dim);font-family:var(--mono);letter-spacing:.1em;margin-bottom:3px">ID DISCORD</div>
+          <div style="font-size:11px;font-family:var(--mono);color:var(--accent)">${esc(id)}</div>
+        </div>
+        <span onclick="navigator.clipboard.writeText('${esc(id)}')" style="cursor:pointer;color:var(--text-dim);padding:4px 8px;border-radius:6px;background:var(--glass);border:1px solid var(--glass-border)" title="Copier">⎘</span>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--glass-border);border-radius:8px;padding:10px 12px;margin-bottom:12px">
+        <div style="font-size:9px;color:var(--text-dim);font-family:var(--mono);letter-spacing:.1em;margin-bottom:3px">COMPTE CRÉÉ</div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--text)">${createdStr}</div>
+      </div>
+      ${hasInfo?`
+      <button onclick="openInfoModal('${esc(username)}')" style="width:100%;padding:9px 0;background:rgba(62,166,255,.08);border:1px solid rgba(62,166,255,.25);border-radius:8px;font-size:12px;font-weight:700;color:var(--accent);cursor:pointer;margin-bottom:12px;transition:all .15s" onmouseover="this.style.background='rgba(62,166,255,.15)'" onmouseout="this.style.background='rgba(62,166,255,.08)'">
+        ⬡ Recherche Info (Nom / Prénom)
+      </button>`:''}
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">Téléchargements</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${avatar?`<a href="${avatar}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:var(--glass);border:1px solid var(--glass-border);border-radius:6px;font-size:12px;color:var(--text-dim);text-decoration:none">↓ Avatar</a>`:''}
+        ${banner?`<a href="${banner}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:var(--glass);border:1px solid var(--glass-border);border-radius:6px;font-size:12px;color:var(--text-dim);text-decoration:none">↓ Bannière</a>`:''}
+      </div>
     </div>
   </div>
-  <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden">
-    <div style="padding:16px 20px;border-bottom:1px solid var(--glass-border)">
-      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Évaluation du risque</div>
-      <div style="font-size:12px;color:var(--text-dim)">Signaux pondérés</div>
+
+  <!-- RIGHT -->
+  <div>
+    <!-- DSA -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <div><div class="sec-title">Sanctions DSA</div><div class="sec-sub">Base de données du règlement européen sur les services numériques</div></div>
+        <span class="cnt-pill pill-gray">0 entrées</span>
+      </div>
+      <div class="sec-empty"><div style="font-size:28px;opacity:.2;margin-bottom:8px">🐱</div><div style="font-weight:600;margin-bottom:4px">Aucune sanction</div><div style="font-size:12px">Aucune déclaration DSA enregistrée</div></div>
     </div>
-    <div style="padding:16px 20px">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
-        <div style="font-size:36px;font-weight:900;color:${riskColor};font-family:var(--mono)">${riskNum}</div>
-        <span style="font-size:11px;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(62,166,255,.1);color:${riskColor}">${riskLabel}</span>
+
+    <!-- Risk -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <div><div class="sec-title">Évaluation du risque</div><div class="sec-sub">Signaux pondérés sur toutes les sources</div></div>
+        <span class="cnt-pill" style="background:${riskBg};color:${humanColor};border:1px solid ${riskBorder}">⬡ ${humanLabel}</span>
       </div>
-      <div style="height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-bottom:16px">
-        <div style="width:${Math.max(riskNum,2)}%;height:100%;background:${riskColor};border-radius:2px"></div>
+      <div style="padding:16px 20px">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+          <div style="font-size:36px;font-weight:900;color:${riskColor};font-family:var(--mono);line-height:1">${riskNum}</div>
+          <div style="font-size:13px;color:var(--text-dim)">/ 100</div>
+          <span class="cnt-pill" style="background:${riskBg};color:${riskColor};border:1px solid ${riskBorder};margin-left:auto">${riskLabel}</span>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-bottom:16px">
+          <div style="width:${Math.max(riskNum,2)}%;height:100%;background:${riskColor};border-radius:2px"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">SIGNAUX</div>
+        ${sigHtml}
+        <div style="margin-top:12px;font-size:11px;color:var(--text-dim);line-height:1.5;border-top:1px solid rgba(255,255,255,.04);padding-top:12px">
+          Une heuristique d'exposition à partir de données publiques/divulguées — pas un verdict sur une personne. Vérifiez avant d'agir.
+        </div>
       </div>
-      ${sigHtml}
+    </div>
+
+    <!-- Breach -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <div><div class="sec-title">Exposition de données</div><div class="sec-sub">Enregistrements agrégés</div></div>
+        <span class="cnt-pill ${breachCount>0?'pill-red':'pill-accent'}">${breachCount} sources</span>
+      </div>
+      ${breachCount===0?`<div class="sec-empty"><div style="font-size:28px;opacity:.2;margin-bottom:8px">✓</div><div style="font-weight:600;margin-bottom:4px">Aucune exposition</div><div style="font-size:12px">Cet ID n'apparaît dans aucune base locale</div></div>`:
+        `<div style="padding:12px 20px;font-size:13px;color:var(--text-mid)">${breachCount} enregistrement(s) trouvé(s)</div>`}
+    </div>
+
+    <!-- FiveM -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <div>
+          <div class="sec-title">Fichiers FiveM</div>
+          <div class="sec-sub">Base de données de serveurs RP &nbsp;·&nbsp; <span style="font-family:var(--mono);font-size:11px">${fivemTook}ms</span></div>
+        </div>
+        <span class="cnt-pill ${fivemTotal>0?'pill-red':'pill-gray'}">${fivemTotal} fichier${fivemTotal!==1?'s':''}</span>
+      </div>
+      ${fivemTotal===0?`<div class="sec-empty"><div style="font-size:28px;opacity:.2;margin-bottom:8px">🎮</div><div style="font-weight:600;margin-bottom:4px">Aucun fichier trouvé</div><div style="font-size:12px">Aucune donnée FiveM liée à cet ID Discord</div></div>`:`
+      ${profilAgregeHTML}
+      <div id="fivem-list">${fivemPageHTML(1)}</div>
+      `}
     </div>
   </div>
+</div>
+
+<!-- Raw -->
+<div class="raw-card" style="margin-top:14px">
+  <div class="raw-card-head"><span>Réponse brute API</span><span class="raw-toggle" onclick="toggleRaw()">Afficher →</span></div>
+  <div class="raw-body" id="raw-body">${esc(JSON.stringify(data,null,2))}</div>
 </div>`;
+
+  window._fivemResults=fivemResults;
+  window.fivemGoPage=function(p){
+    const total=Math.ceil(fivemResults.length/PER_PAGE);
+    if(p<1||p>total)return;
+    fivemPage=p;
+    document.getElementById('fivem-list').innerHTML=fivemPageHTML(p);
+  };
+  window.toggleFivemRow=function(el){
+    const row=el.closest('div[style]').nextElementSibling;
+    if(!row)return;
+    const open=row.style.display==='block';
+    row.style.display=open?'none':'block';
+    el.textContent=open?'⌃':'⌄';
+  };
 }
 
 function renderIP(q,data,status){
@@ -1092,9 +1241,16 @@ function renderIP(q,data,status){
     document.getElementById('result-content').innerHTML=`<div class="result-error">⚠ ${esc(data.message||'Lookup échoué')}</div>`;
     return;
   }
+  const json=JSON.stringify(data,null,2);
+  const colored=json
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*")\s*:/g,'<span style="color:#79c0ff">$1</span>:')
+    .replace(/:\s*("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*")/g,': <span style="color:#a5d6ff">$1</span>')
+    .replace(/:\s*(true|false)/g,': <span style="color:#ff7b72">$1</span>')
+    .replace(/:\s*(\d+\.?\d*)/g,': <span style="color:#3ee087">$1</span>')
+    .replace(/:\s*(null)/g,': <span style="color:#6e7681">$1</span>');
 
   document.getElementById('result-content').innerHTML=`
-  <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-family:var(--mono)">RECHERCHE</div>
+  <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-family:var(--mono)">Recherche</div>
   <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.02em;margin-bottom:4px">
     IP résolu <span style="color:var(--text-dim);font-weight:400">— données réseau complètes</span>
   </div>
@@ -1122,8 +1278,16 @@ function renderIP(q,data,status){
       <span>Réponse JSON complète</span>
       <span style="color:var(--green);font-size:11px">200 OK</span>
     </div>
-    <pre style="padding:20px;font-size:12px;font-family:var(--mono);line-height:1.8;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:0;color:var(--text-dim)">${esc(JSON.stringify(data,null,2))}</pre>
-  </div>`;
+    <pre style="padding:20px;font-size:12px;font-family:var(--mono);line-height:1.8;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:0">${colored}</pre>
+  </div>
+  `;
+}
+
+function toggleRaw(){
+  const b=document.getElementById('raw-body');
+  const t=b.previousElementSibling.querySelector('.raw-toggle');
+  b.classList.toggle('open');
+  t.textContent=b.classList.contains('open')?'Masquer ←':'Afficher →';
 }
 
 function snowToDate(id){try{return new Date(Number((BigInt(id)>>22n)+1420070400000n))}catch{return null}}
@@ -1327,6 +1491,7 @@ function trackUsage(){
   saveSession(session);
 }
 
+// ── Override goTo ──
 const _origGoTo=goTo;
 goTo=function(page){
   _origGoTo(page);
@@ -1342,6 +1507,7 @@ goTo=function(page){
   }
 };
 
+// ── Init ──
 (function init(){
   const session=getSession();
   if(session&&session.apiKey){
@@ -1359,7 +1525,7 @@ goTo=function(page){
       })
       .catch(()=>{
         document.getElementById('auth-overlay').style.display='none';
-        if(session)updateNavUser(session);
+        updateNavUser(session);
       });
   }
   document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
