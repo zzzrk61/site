@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-VoidTrace Proxy Server — Version Optimisée & Fix JSON
-Accès local : http://localhost:8000
+VoidTrace Proxy Server — Version Optimisée
+Lance avec : python proxy.py
+Accès : http://localhost:8000
 """
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -14,9 +15,7 @@ API_KEY_DISCORD = "cc_8b7545d8d46432196c93142dbeba9665e062217d459e1f5d"
 API_KEY_BRIX    = "brix_7CYSOvLuHLJ8ZtnutYuwGEFYEMiV2Rnl469mQcVsJA0kpYeo"
 
 SITE_FILE = "voidtrace-full.html"
-
-# Render impose un port dynamique
-PORT = int(os.environ.get("PORT", 8000))
+PORT      = 8000
 
 
 # ==========================
@@ -108,9 +107,11 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         # -----------------------------------------
-        # 404 JSON FIX
+        # 404
         # -----------------------------------------
-        return self._json_err(404, "Not found")
+        self.send_response(404)
+        self.end_headers()
+        self.wfile.write(b"Not found")
 
     # ==========================
     # HELPERS
