@@ -117,7 +117,7 @@ header{
 .usage-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
 
 /* ══ ADMIN ══ */
-.admin-wrap{max-width:960px;margin:0 auto;padding:60px 52px;position:relative;z-index:2}
+.admin-wrap{max-width:1100px;margin:0 auto;padding:60px 52px;position:relative;z-index:2}
 .admin-table{width:100%;border-collapse:collapse}
 .admin-table th{font-size:11px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);text-align:left;padding:10px 16px;border-bottom:1px solid var(--glass-border)}
 .admin-table td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
@@ -130,6 +130,20 @@ header{
 .toggle-switch input:checked+.toggle-slider::before{transform:translateX(18px)}
 .plan-select{background:var(--bg);border:1px solid var(--glass-border);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--text);font-family:var(--mono);outline:none;cursor:pointer}
 .admin-badge{font-size:10px;font-family:var(--mono);font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(255,184,0,.12);color:var(--yellow);border:1px solid rgba(255,184,0,.2)}
+
+/* ══ INFO MODAL ══ */
+.info-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(7,7,11,0.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center}
+.info-modal-overlay.open{display:flex}
+.info-modal{background:var(--panel);border:1px solid var(--glass-border);border-radius:16px;width:100%;max-width:400px;padding:28px;position:relative}
+.info-modal-title{font-size:16px;font-weight:800;color:#fff;margin-bottom:6px}
+.info-modal-sub{font-size:12px;color:var(--text-dim);margin-bottom:20px;font-family:var(--mono)}
+.info-modal-close{position:absolute;top:16px;right:16px;cursor:pointer;color:var(--text-dim);font-size:18px;line-height:1;padding:4px 8px;border-radius:6px;background:var(--glass);border:1px solid var(--glass-border)}
+.info-modal-close:hover{color:#fff}
+.info-result{background:var(--bg);border:1px solid var(--glass-border);border-radius:10px;padding:16px;margin-top:16px;display:none}
+.info-result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+.info-result-row:last-child{border-bottom:none}
+.info-result-key{color:var(--text-dim)}
+.info-result-val{font-family:var(--mono);font-size:12px;color:#fff;text-align:right}
 
 /* ══════════ HOME ══════════ */
 .home-hero{
@@ -370,6 +384,28 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
   </div>
 </div>
 
+<!-- INFO MODAL -->
+<div class="info-modal-overlay" id="info-modal-overlay">
+  <div class="info-modal">
+    <div class="info-modal-title">Recherche Info</div>
+    <div class="info-modal-sub" id="info-modal-target">—</div>
+    <span class="info-modal-close" onclick="closeInfoModal()">✕</span>
+    <div class="auth-field" style="margin-bottom:10px">
+      <label>Prénom</label>
+      <input type="text" id="info-prenom" placeholder="Jean" />
+    </div>
+    <div class="auth-field">
+      <label>Nom</label>
+      <input type="text" id="info-nom" placeholder="Dupont" />
+    </div>
+    <button class="auth-btn" onclick="submitInfo()" style="margin-top:4px">Rechercher →</button>
+    <div id="info-result-wrap" class="info-result">
+      <div id="info-result-inner"></div>
+    </div>
+    <div class="auth-err" id="info-err"></div>
+  </div>
+</div>
+
 <!-- DASHBOARD PAGE -->
 <div class="page" id="page-dashboard">
   <div class="dash-wrap">
@@ -423,6 +459,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
       <div id="dash-perms">
         <div class="perm-row"><span class="perm-name">Discord Lookup</span><span class="perm-badge perm-off" id="perm-discord">Désactivé</span></div>
         <div class="perm-row"><span class="perm-name">IP Lookup</span><span class="perm-badge perm-off" id="perm-ip">Désactivé</span></div>
+        <div class="perm-row"><span class="perm-name">Info (Nom / Prénom)</span><span class="perm-badge perm-off" id="perm-info">Désactivé</span></div>
         <div class="perm-row"><span class="perm-name">Accès FiveM data</span><span class="perm-badge perm-off" id="perm-fivem">Désactivé</span></div>
         <div class="perm-row"><span class="perm-name">Accès Breach data</span><span class="perm-badge perm-off" id="perm-breach">Désactivé</span></div>
       </div>
@@ -446,7 +483,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
       <div style="overflow-x:auto">
         <table class="admin-table">
           <thead><tr>
-            <th>Username</th><th>Plan</th><th>Discord</th><th>IP</th><th>FiveM</th><th>Breach</th><th>Req. today</th><th>Total</th><th>Actions</th>
+            <th>Username</th><th>Plan</th><th>Discord</th><th>IP</th><th>Info</th><th>FiveM</th><th>Breach</th><th>Req. today</th><th>Total</th><th>Actions</th>
           </tr></thead>
           <tbody id="admin-tbody"></tbody>
         </table>
@@ -581,6 +618,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
           <li>10 000 requêtes / jour</li>
           <li>Discord ID lookup complet</li>
           <li>IP lookup étendu (ASN, proxy, GPS)</li>
+          <li>Info Nom / Prénom</li>
           <li>Rate limit : 50 req/s</li>
           <li>Clé API dédiée</li>
           <li>Support prioritaire 24h</li>
@@ -629,6 +667,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
         <div class="sidebar-label">Endpoints</div>
         <a class="sidebar-link" onclick="scrollDoc('doc-discord')">Discord Lookup</a>
         <a class="sidebar-link" onclick="scrollDoc('doc-ip')">IP Lookup</a>
+        <a class="sidebar-link" onclick="scrollDoc('doc-info')">Info Lookup</a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Ressources</div>
@@ -638,7 +677,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
     </div>
     <div class="docs-content">
       <h2 id="doc-intro">Introduction</h2>
-      <p>L'API VoidTrace expose deux modules : lookup de profils Discord par Snowflake ID, et géolocalisation d'adresses IP. Accessible via HTTP GET avec authentification par clé API.</p>
+      <p>L'API VoidTrace expose trois modules : lookup de profils Discord par Snowflake ID, géolocalisation d'adresses IP, et recherche par nom/prénom. Accessible via HTTP GET avec authentification par clé API.</p>
       <p>Base URL :</p>
       <div class="code-block"><span class="v">https://api.voidtrace.io/v1</span></div>
       <h2 id="doc-auth">Authentification</h2>
@@ -678,6 +717,15 @@ curl -X GET <span class="s">"https://api.voidtrace.io/v1/discord/803511102246789
 curl -X GET <span class="s">"https://api.voidtrace.io/v1/ip/1.1.1.1"</span> \
   -H <span class="s">"X-API-Key: vt_your_key"</span></div>
       <div class="notice warn">Les données de géolocalisation sont indicatives. VoidTrace ne garantit pas la précision à l'échelle d'une adresse physique.</div>
+      <h2 id="doc-info">Info Lookup</h2>
+      <p>Recherche par nom et prénom via l'API BrixHub. Nécessite la permission <code style="font-family:var(--mono);color:var(--accent)">info</code>.</p>
+      <div class="endpoint-card">
+        <div><span class="badge-method bm-get">GET</span><span class="ep-url">/api/brix/{prenom}+{nom}</span></div>
+      </div>
+      <div class="code-block"><span class="c"># Exemple</span>
+curl -X GET <span class="s">"https://api.voidtrace.io/api/brix/Jean+Dupont"</span> \
+  -H <span class="s">"X-API-Key: vt_your_key"</span></div>
+      <div class="notice">La permission <b>Info</b> doit être activée par un administrateur pour accéder à cet endpoint.</div>
     </div>
   </div>
 </div>
@@ -691,7 +739,7 @@ curl -X GET <span class="s">"https://api.voidtrace.io/v1/ip/1.1.1.1"</span> \
     <p>VoidTrace est une plateforme OSINT proposant des services de lookup de données publiques, accessible à <strong style="color:var(--text)">voidtrace.io</strong>.</p>
     <h2>2. Nature des données traitées</h2>
     <p>VoidTrace traite exclusivement des données publiquement accessibles :</p>
-    <ul><li>Profils Discord publics via l'API officielle Discord</li><li>Informations de géolocalisation IP issues de bases WHOIS et GeoIP publiques</li></ul>
+    <ul><li>Profils Discord publics via l'API officielle Discord</li><li>Informations de géolocalisation IP issues de bases WHOIS et GeoIP publiques</li><li>Données de recherche par identité issues de l'API BrixHub</li></ul>
     <h2>3. Utilisations autorisées</h2>
     <ul><li>Sécurité informatique défensive (audit, investigation)</li><li>Vérification d'identité dans un cadre légal</li><li>Recherche académique et journalisme d'investigation</li><li>Modération de plateformes</li></ul>
     <h2>4. Utilisations interdites</h2>
@@ -766,6 +814,61 @@ function switchMode(m){
 
 document.getElementById('query-input').addEventListener('keydown',e=>{if(e.key==='Enter')runLookup()});
 
+// ══ INFO MODAL ══
+let _infoTarget='';
+function openInfoModal(username){
+  _infoTarget=username;
+  document.getElementById('info-modal-target').textContent='Utilisateur : '+username;
+  document.getElementById('info-prenom').value='';
+  document.getElementById('info-nom').value='';
+  document.getElementById('info-err').textContent='';
+  document.getElementById('info-result-wrap').style.display='none';
+  document.getElementById('info-result-inner').innerHTML='';
+  document.getElementById('info-modal-overlay').classList.add('open');
+}
+function closeInfoModal(){
+  document.getElementById('info-modal-overlay').classList.remove('open');
+}
+document.getElementById('info-modal-overlay').addEventListener('click',function(e){
+  if(e.target===this)closeInfoModal();
+});
+
+async function submitInfo(){
+  const prenom=document.getElementById('info-prenom').value.trim();
+  const nom=document.getElementById('info-nom').value.trim();
+  const err=document.getElementById('info-err');
+  err.textContent='';
+  if(!prenom&&!nom){err.textContent='Entrez au moins un prénom ou un nom.';return;}
+  const session=getSession();
+  if(!session){err.textContent='Non connecté.';return;}
+  const perms=session.permissions||{};
+  if(!perms.info){err.textContent='Permission Info non activée.';return;}
+
+  const query=encodeURIComponent([prenom,nom].filter(Boolean).join(' '));
+  err.textContent='Recherche…';
+  try{
+    const r=await fetch(`/api/brix/${query}`,{headers:{'X-VT-Key':session.apiKey,'X-VT-User':session.username}});
+    const data=await r.json();
+    err.textContent='';
+    renderInfoResult(data);
+  }catch(e){
+    err.textContent='Erreur : '+e.message;
+  }
+}
+
+function renderInfoResult(data){
+  const wrap=document.getElementById('info-result-wrap');
+  const inner=document.getElementById('info-result-inner');
+  wrap.style.display='block';
+  // Affiche la réponse brute de l'API de façon lisible
+  const rows=Object.entries(data).map(([k,v])=>`
+    <div class="info-result-row">
+      <span class="info-result-key">${esc(k)}</span>
+      <span class="info-result-val">${esc(typeof v==='object'?JSON.stringify(v):String(v))}</span>
+    </div>`).join('');
+  inner.innerHTML=rows||`<div style="font-size:13px;color:var(--text-dim);text-align:center;padding:8px">Aucun résultat</div>`;
+}
+
 async function runLookup(){
   const q=document.getElementById('query-input').value.trim();
   if(!q)return;
@@ -776,7 +879,7 @@ async function runLookup(){
     document.getElementById('auth-overlay').style.display='flex';
     return;
   }
-  // ── Permission check (depuis cache session) ──
+  // ── Permission check ──
   const perms=session.permissions||{};
   if(mode==='discord'&&!perms.discord){showPermError('Discord Lookup');return;}
   if(mode==='ip'&&!perms.ip){showPermError('IP Lookup');return;}
@@ -793,7 +896,6 @@ async function runLookup(){
   try{
     const cfg=API_CONFIG[mode];
     const url=cfg.url.replace('{query}',encodeURIComponent(q));
-    // Envoie la clé API VoidTrace dans les headers
     const headers={...cfg.headers,'X-VT-Key':session.apiKey,'X-VT-User':session.username};
     const r=await fetch(url,{method:cfg.method,headers});
     const data=await r.json();
@@ -836,7 +938,6 @@ function renderDiscord(q,data,status){
   const isBot=!!u.bot;
   const flags=parseFlags(u.public_flags||u.flags||0);
 
-  // Score from API
   const score=data.score||{};
   const riskNum=score.risk??0;
   const riskLevel=score.level||'low';
@@ -848,13 +949,11 @@ function renderDiscord(q,data,status){
   const humanLabel=riskLevel==='low'?'Humain':'Suspect';
   const humanColor=riskLevel==='low'?'var(--green)':'var(--red)';
 
-  // FiveM
   const fivemData=data.fivem?.data||{};
   const fivemTotal=fivemData.total||0;
   const fivemResults=fivemData.results||[];
   const fivemTook=fivemData.took||0;
 
-  // Profil agrégé FiveM
   const allNames=[...new Set(fivemResults.map(r=>r.name).filter(Boolean))];
   const allIPs=[...new Set(fivemResults.map(r=>r.ip).filter(Boolean))];
   const allSteam=[...new Set(fivemResults.map(r=>r.steam).filter(Boolean))];
@@ -863,20 +962,21 @@ function renderDiscord(q,data,status){
   const allFivemIds=[...new Set(fivemResults.map(r=>r.fivem).filter(Boolean))];
   const allIpAsn=fivemResults.filter(r=>r.ip_asn).map(r=>({ip:r.ip,asn:r.ip_asn}));
 
-  // Breach
   const breachData=data.breach?.data||{};
   const breachCount=data.breach?.resultsCount||0;
 
-  // Pagination
   const PER_PAGE=5;
   let fivemPage=1;
-  const fivemPageCount=Math.ceil(fivemResults.length/PER_PAGE);
 
   const avatarHtml=avatar?`<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='?'" />`:'?';
   const flagBadges=flags.map(f=>`<span class="rbadge rb-flag">${f}</span>`).join('');
   const nitroBadge=nitro?`<span class="rbadge rb-nitro">Nitro ${premType(u.premium_type)}</span>`:'';
   const botBadge=isBot?`<span class="rbadge rb-bot">Bot</span>`:'';
   const createdStr=createdAt?createdAt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+
+  // Check info permission
+  const session=getSession();
+  const hasInfo=(session?.permissions||{}).info;
 
   function fivemPageHTML(page){
     const start=(page-1)*PER_PAGE;
@@ -929,7 +1029,6 @@ function renderDiscord(q,data,status){
       </div>`;
   }
 
-  // Profil agrégé section
   const profilAgregeHTML=fivemTotal>0?`
     <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.04)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
@@ -974,7 +1073,6 @@ function renderDiscord(q,data,status){
       </div>
     </div>`:''
 
-  // Signaux
   const sigHtml=riskSignals.length
     ? riskSignals.map(s=>`<div class="sig-row"><span class="sig-dot" style="background:${s.kind==='good'?'var(--green)':s.kind==='bad'?'var(--red)':'var(--yellow)'}"></span>${esc(s.label)}${s.detail?` — <span style="color:var(--text-dim)">${esc(s.detail)}</span>`:''}</div>`).join('')
     : `<div style="font-size:13px;color:var(--text-dim);padding:6px 0">Aucun signal de risque détecté.</div>`;
@@ -1043,6 +1141,10 @@ function renderDiscord(q,data,status){
         <div style="font-size:9px;color:var(--text-dim);font-family:var(--mono);letter-spacing:.1em;margin-bottom:3px">COMPTE CRÉÉ</div>
         <div style="font-size:11px;font-family:var(--mono);color:var(--text)">${createdStr}</div>
       </div>
+      ${hasInfo?`
+      <button onclick="openInfoModal('${esc(username)}')" style="width:100%;padding:9px 0;background:rgba(62,166,255,.08);border:1px solid rgba(62,166,255,.25);border-radius:8px;font-size:12px;font-weight:700;color:var(--accent);cursor:pointer;margin-bottom:12px;transition:all .15s" onmouseover="this.style.background='rgba(62,166,255,.15)'" onmouseout="this.style.background='rgba(62,166,255,.08)'">
+        ⬡ Recherche Info (Nom / Prénom)
+      </button>`:''}
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">Téléchargements</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         ${avatar?`<a href="${avatar}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:var(--glass);border:1px solid var(--glass-border);border-radius:6px;font-size:12px;color:var(--text-dim);text-decoration:none">↓ Avatar</a>`:''}
@@ -1118,7 +1220,6 @@ function renderDiscord(q,data,status){
   <div class="raw-body" id="raw-body">${esc(JSON.stringify(data,null,2))}</div>
 </div>`;
 
-  // Expose pagination & toggle globally
   window._fivemResults=fivemResults;
   window.fivemGoPage=function(p){
     const total=Math.ceil(fivemResults.length/PER_PAGE);
@@ -1140,7 +1241,6 @@ function renderIP(q,data,status){
     document.getElementById('result-content').innerHTML=`<div class="result-error">⚠ ${esc(data.message||'Lookup échoué')}</div>`;
     return;
   }
-  // IP → JSON coloré
   const json=JSON.stringify(data,null,2);
   const colored=json
     .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*")\s*:/g,'<span style="color:#79c0ff">$1</span>:')
@@ -1155,8 +1255,6 @@ function renderIP(q,data,status){
     IP résolu <span style="color:var(--text-dim);font-weight:400">— données réseau complètes</span>
   </div>
   <div style="font-size:13px;color:var(--text-dim);font-family:var(--mono);margin-bottom:28px">${esc(data.query||q)}</div>
-
-  <!-- Info rapide -->
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
     <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:8px;padding:10px 16px">
       <div style="font-size:10px;color:var(--text-dim);font-family:var(--mono);letter-spacing:.06em;margin-bottom:3px">PAYS</div>
@@ -1175,8 +1273,6 @@ function renderIP(q,data,status){
       <div style="font-size:13px;font-weight:700;color:${data.proxy?'var(--red)':'var(--green)'}">${data.proxy?'Détecté':'Aucun'}</div>
     </div>
   </div>
-
-  <!-- JSON brut coloré -->
   <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden">
     <div style="padding:14px 20px;font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);border-bottom:1px solid var(--glass-border);display:flex;justify-content:space-between;align-items:center">
       <span>Réponse JSON complète</span>
@@ -1215,8 +1311,6 @@ function scrollDoc(id){
 }
 
 // ════ AUTH SYSTEM ════
-// Tout passe par le proxy — localStorage = cache session uniquement
-
 function getSession(){return JSON.parse(localStorage.getItem('vt_session')||'null')}
 function saveSession(u){localStorage.setItem('vt_session',JSON.stringify(u))}
 function clearSession(){localStorage.removeItem('vt_session')}
@@ -1311,7 +1405,7 @@ function updateDashboard(user){
   document.getElementById('usage-label-left').textContent=`${user.reqToday||0} requêtes utilisées`;
   document.getElementById('usage-label-right').textContent=limit===999999?'Illimité':`${Math.max(0,limit-(user.reqToday||0)).toLocaleString()} restantes`;
   const perms=user.permissions||{};
-  ['discord','ip','fivem','breach'].forEach(k=>{
+  ['discord','ip','info','fivem','breach'].forEach(k=>{
     const el=document.getElementById('perm-'+k);
     if(!el)return;
     el.textContent=perms[k]?'Activé':'Désactivé';
@@ -1361,6 +1455,7 @@ async function loadAdmin(){
         </select></td>
         <td style="text-align:center;vertical-align:middle"><label class="toggle-switch"><input type="checkbox" ${p.discord?'checked':''} onchange="adminSetPerm('${k}','discord',this.checked)"><span class="toggle-slider"></span></label></td>
         <td style="text-align:center;vertical-align:middle"><label class="toggle-switch"><input type="checkbox" ${p.ip?'checked':''} onchange="adminSetPerm('${k}','ip',this.checked)"><span class="toggle-slider"></span></label></td>
+        <td style="text-align:center;vertical-align:middle"><label class="toggle-switch"><input type="checkbox" ${p.info?'checked':''} onchange="adminSetPerm('${k}','info',this.checked)"><span class="toggle-slider"></span></label></td>
         <td style="text-align:center;vertical-align:middle"><label class="toggle-switch"><input type="checkbox" ${p.fivem?'checked':''} onchange="adminSetPerm('${k}','fivem',this.checked)"><span class="toggle-slider"></span></label></td>
         <td style="text-align:center;vertical-align:middle"><label class="toggle-switch"><input type="checkbox" ${p.breach?'checked':''} onchange="adminSetPerm('${k}','breach',this.checked)"><span class="toggle-slider"></span></label></td>
         <td style="font-family:var(--mono);color:var(--text-dim)">${u.reqToday||0}</td>
@@ -1389,7 +1484,6 @@ async function adminDeleteUser(username){
   loadAdmin();
 }
 
-// ── Track usage (proxy le fait aussi, on met juste à jour le cache local) ──
 function trackUsage(){
   const session=getSession();if(!session)return;
   session.reqToday=(session.reqToday||0)+1;
@@ -1403,7 +1497,6 @@ goTo=function(page){
   _origGoTo(page);
   if(page==='admin'){loadAdmin();}
   if(page==='dashboard'){
-    // Refresh depuis le serveur
     const s=getSession();
     if(s){
       fetch('/auth/me',{headers:{'X-VT-Key':s.apiKey}})
@@ -1418,7 +1511,6 @@ goTo=function(page){
 (function init(){
   const session=getSession();
   if(session&&session.apiKey){
-    // Vérifie la session côté serveur
     fetch('/auth/me',{headers:{'X-VT-Key':session.apiKey}})
       .then(r=>r.json())
       .then(data=>{
@@ -1432,7 +1524,6 @@ goTo=function(page){
         }
       })
       .catch(()=>{
-        // Proxy offline → on accepte la session cached
         document.getElementById('auth-overlay').style.display='none';
         updateNavUser(session);
       });
@@ -1441,8 +1532,6 @@ goTo=function(page){
   document.getElementById('reg-pass2').addEventListener('keydown',e=>{if(e.key==='Enter')doRegister()});
   document.getElementById('login-user').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus()});
 })();
-
-
 </script>
 </body>
 </html>
