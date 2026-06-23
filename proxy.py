@@ -230,6 +230,29 @@ class Handler(BaseHTTPRequestHandler):
 
         self.send_response(404)
         self.end_headers()
+                try:
+                    json.loads(raw)
+                except:
+                    return self.json_out(500, {"status": "fail", "message": "Réponse invalide de BrixHub"})
+
+                self.track(user)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.cors()
+                self.end_headers()
+                return self.wfile.write(raw)
+
+            except urllib.error.HTTPError as e:
+                error_body = e.read()
+                self.send_response(e.code)
+                self.send_header("Content-Type", "application/json")
+                self.cors()
+                self.end_headers()
+                return self.wfile.write(error_body)
+
+            except Exception as e:
+                return self.json_out(500, {"status": "fail", "message": str(e)})
+
         # ════ Static Files ════
         if path == "/" or path == "/index.html":
             path = "/" + SITE_FILE
