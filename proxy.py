@@ -525,4 +525,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n  Arrêté.")
         sys.exit(0)
-
