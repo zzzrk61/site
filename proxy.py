@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """
 VoidTrace Proxy Server — Source de vérité centralisée
-Lance avec : python proxy.py
-Accès site  : http://localhost:8000
+API Endpoints: Discord (Cord.cat), IP Lookup, Info (BrixHub)
 """
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import urllib.request, urllib.error, json, os, mimetypes, hashlib, datetime, secrets
+import urllib.request, urllib.error, json, os, mimetypes, hashlib, datetime, secrets, sys
+from urllib.parse import parse_qs, urlparse
 
+# ════ Configuration ════
 API_KEY_DISCORD = "cc_8b7545d8d46432196c93142dbeba9665e062217d459e1f5d"
-SITE_FILE       = "voidtrace-full.html"
-USERS_FILE      = "vt_users.json"
-PORT            = 8000
+API_KEY_BRIX = "brix_7CYSOvLuHLJ8ZtnutYuwGEFYEMiV2Rnl469mQcVsJA0kpYeo"
+SITE_FILE = "voidtrace-full.html"
+USERS_FILE = "vt_users.json"
+PORT = int(os.environ.get('PORT', 8000))
 
-PLANS = {"free":100,"pro":10000,"enterprise":999999}
-ADMIN_USERNAME  = "zzzrk61"
+PLANS = {"free": 100, "pro": 10000, "enterprise": 999999}
+ADMIN_USERNAME = "zzzrk61"
 
+# ════ Utilitaires ════
 def hash_pass(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
@@ -32,61 +35,68 @@ def load_users():
     return {}
 
 def save_users(users):
-    with open(USERS_FILE,"w") as f:
+    with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=2)
 
 def today_str():
     return datetime.date.today().isoformat()
 
+# ════ Handler ════
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         print(f"  {self.address_string()} — {fmt % args}")
 
     def cors(self):
-        self.send_header("Access-Control-Allow-Origin","*")
-        self.send_header("Access-Control-Allow-Headers","*")
-        self.send_header("Access-Control-Allow-Methods","GET,POST,OPTIONS")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Headers", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
 
     def do_OPTIONS(self):
-        self.send_response(200); self.cors(); self.end_headers()
+        self.send_response(200)
+        self.cors()
+        self.end_headers()
 
     def json_out(self, code, obj):
         body = json.dumps(obj).encode()
         self.send_response(code)
-        self.send_header("Content-Type","application/json")
+        self.send_header("Content-Type", "application/json")
         self.cors()
         self.end_headers()
         self.wfile.write(body)
 
     def read_body(self):
-        l = int(self.headers.get("Content-Length",0))
+        l = int(self.headers.get("Content-Length", 0))
         return self.rfile.read(l)
 
+    # ════ AUTH Routes ════
     def do_POST(self):
         path = self.path.split("?")[0]
 
-        # ── REGISTER ──
+        # REGISTER
         if path == "/auth/register":
             try:
                 body = json.loads(self.read_body())
-                u = body.get("username","").strip().lower()
-                p = body.get("password","")
-                if not u or len(u)<3:
-                    self.json_out(400,{"ok":False,"error":"Username minimum 3 caractères"}); return
-                if not all(c.isalnum() or c=='_' for c in u):
-                    self.json_out(400,{"ok":False,"error":"Username: lettres, chiffres et _ uniquement"}); return
-                if len(p)<6:
-                    self.json_out(400,{"ok":False,"error":"Mot de passe minimum 6 caractères"}); return
+                u = body.get("username", "").strip().lower()
+                p = body.get("password", "")
+                
+                if not u or len(u) < 3:
+                    self.json_out(400, {"ok": False, "error": "Username minimum 3 caractères"}); return
+                if not all(c.isalnum() or c == '_' for c in u):
+                    self.json_out(400, {"ok": False, "error": "Username: lettres, chiffres et _ uniquement"}); return
+                if len(p) < 6:
+                    self.json_out(400, {"ok": False, "error": "Mot de passe minimum 6 caractères"}); return
+                
                 users = load_users()
                 if u in users:
-                    self.json_out(400,{"ok":False,"error":"Ce username est déjà pris"}); return
+                    self.json_out(400, {"ok": False, "error": "Ce username est déjà pris"}); return
+                
                 is_admin = (u == ADMIN_USERNAME)
                 users[u] = {
                     "username": u,
                     "password": hash_pass(p),
                     "apiKey": gen_api_key(u),
                     "plan": "enterprise" if is_admin else "free",
-                    "permissions": {"discord":is_admin,"ip":is_admin,"fivem":is_admin,"breach":is_admin},
+                    "permissions": {"discord": is_admin, "ip": is_admin, "info": is_admin, "fivem": is_admin, "breach": is_admin},
                     "isAdmin": is_admin,
                     "createdAt": today_str(),
                     "reqToday": 0,
@@ -94,240 +104,332 @@ class Handler(BaseHTTPRequestHandler):
                     "lastReqDay": today_str()
                 }
                 save_users(users)
-                user_pub = {k:v for k,v in users[u].items() if k!="password"}
-                self.json_out(200,{"ok":True,"user":user_pub})
+                user_pub = {k: v for k, v in users[u].items() if k != "password"}
+                self.json_out(200, {"ok": True, "user": user_pub})
             except Exception as e:
-                self.json_out(500,{"ok":False,"error":str(e)})
+                self.json_out(500, {"ok": False, "error": str(e)})
             return
 
-        # ── LOGIN ──
+        # LOGIN
         if path == "/auth/login":
             try:
                 body = json.loads(self.read_body())
-                u = body.get("username","").strip().lower()
-                p = body.get("password","")
+                u = body.get("username", "").strip().lower()
+                p = body.get("password", "")
                 users = load_users()
                 user = users.get(u)
+                
                 if not user or user["password"] != hash_pass(p):
-                    self.json_out(401,{"ok":False,"error":"Username ou mot de passe incorrect"}); return
-                # Reset daily if new day
+                    self.json_out(401, {"ok": False, "error": "Username ou mot de passe incorrect"}); return
+                
                 if user.get("lastReqDay") != today_str():
                     user["reqToday"] = 0
                     user["lastReqDay"] = today_str()
                     users[u] = user
                     save_users(users)
-                user_pub = {k:v for k,v in user.items() if k!="password"}
-                self.json_out(200,{"ok":True,"user":user_pub})
+                
+                user_pub = {k: v for k, v in user.items() if k != "password"}
+                self.json_out(200, {"ok": True, "user": user_pub})
             except Exception as e:
-                self.json_out(500,{"ok":False,"error":str(e)})
+                self.json_out(500, {"ok": False, "error": str(e)})
             return
 
-        # ── REGEN KEY ──
+        # REGEN KEY
         if path == "/auth/regen-key":
             try:
                 body = json.loads(self.read_body())
-                vt_key = body.get("apiKey","")
+                vt_key = body.get("apiKey", "")
                 users = load_users()
-                for u,user in users.items():
+                for u, user in users.items():
                     if user.get("apiKey") == vt_key:
                         user["apiKey"] = gen_api_key(u)
                         users[u] = user
                         save_users(users)
-                        self.json_out(200,{"ok":True,"apiKey":user["apiKey"]}); return
-                self.json_out(403,{"ok":False,"error":"Clé invalide"})
+                        self.json_out(200, {"ok": True, "apiKey": user["apiKey"]}); return
+                self.json_out(403, {"ok": False, "error": "Clé invalide"})
             except Exception as e:
-                self.json_out(500,{"ok":False,"error":str(e)})
+                self.json_out(500, {"ok": False, "error": str(e)})
             return
 
-        # ── ADMIN: set plan ──
+        # ADMIN: set plan
         if path == "/admin/set-plan":
             try:
                 body = json.loads(self.read_body())
-                admin_key = body.get("adminKey","")
-                target = body.get("username","")
-                plan = body.get("plan","free")
+                admin_key = body.get("adminKey", "")
+                target = body.get("username", "")
+                plan = body.get("plan", "free")
                 users = load_users()
-                # verify admin
-                admin = next((u for u in users.values() if u.get("apiKey")==admin_key and u.get("isAdmin")),None)
+                admin = next((u for u in users.values() if u.get("apiKey") == admin_key and u.get("isAdmin")), None)
                 if not admin:
-                    self.json_out(403,{"ok":False,"error":"Non autorisé"}); return
+                    self.json_out(403, {"ok": False, "error": "Non autorisé"}); return
                 if target not in users:
-                    self.json_out(404,{"ok":False,"error":"User introuvable"}); return
+                    self.json_out(404, {"ok": False, "error": "User introuvable"}); return
                 users[target]["plan"] = plan
                 save_users(users)
-                self.json_out(200,{"ok":True})
+                self.json_out(200, {"ok": True})
             except Exception as e:
-                self.json_out(500,{"ok":False,"error":str(e)})
+                self.json_out(500, {"ok": False, "error": str(e)})
             return
 
-        # ── ADMIN: set permission ──
+        # ADMIN: set permission
         if path == "/admin/set-perm":
             try:
                 body = json.loads(self.read_body())
-                admin_key = body.get("adminKey","")
-                target = body.get("username","")
-                perm = body.get("perm","")
-                val = body.get("val",False)
+                admin_key = body.get("adminKey", "")
+                target = body.get("username", "")
+                perm = body.get("perm", "")
+                val = body.get("val", False)
                 users = load_users()
-                admin = next((u for u in users.values() if u.get("apiKey")==admin_key and u.get("isAdmin")),None)
+                admin = next((u for u in users.values() if u.get("apiKey") == admin_key and u.get("isAdmin")), None)
                 if not admin:
-                    self.json_out(403,{"ok":False,"error":"Non autorisé"}); return
+                    self.json_out(403, {"ok": False, "error": "Non autorisé"}); return
                 if target not in users:
-                    self.json_out(404,{"ok":False,"error":"User introuvable"}); return
+                    self.json_out(404, {"ok": False, "error": "User introuvable"}); return
                 if "permissions" not in users[target]:
                     users[target]["permissions"] = {}
                 users[target]["permissions"][perm] = val
                 save_users(users)
-                self.json_out(200,{"ok":True})
+                self.json_out(200, {"ok": True})
             except Exception as e:
-                self.json_out(500,{"ok":False,"error":str(e)})
+                self.json_out(500, {"ok": False, "error": str(e)})
             return
 
-        # ── ADMIN: delete user ──
+        # ADMIN: delete user
         if path == "/admin/delete-user":
             try:
                 body = json.loads(self.read_body())
-                admin_key = body.get("adminKey","")
-                target = body.get("username","")
+                admin_key = body.get("adminKey", "")
+                target = body.get("username", "")
                 users = load_users()
-                admin = next((u for u in users.values() if u.get("apiKey")==admin_key and u.get("isAdmin")),None)
+                admin = next((u for u in users.values() if u.get("apiKey") == admin_key and u.get("isAdmin")), None)
                 if not admin:
-                    self.json_out(403,{"ok":False,"error":"Non autorisé"}); return
+                    self.json_out(403, {"ok": False, "error": "Non autorisé"}); return
                 if target in users:
                     del users[target]
                     save_users(users)
-                self.json_out(200,{"ok":True})
+                self.json_out(200, {"ok": True})
             except Exception as e:
-                self.json_out(500,{"ok":False,"error":str(e)})
+                self.json_out(500, {"ok": False, "error": str(e)})
             return
 
-        self.send_response(404); self.end_headers()
+        self.send_response(404)
+        self.end_headers()
 
+    # ════ API Routes ════
     def do_GET(self):
         path = self.path.split("?")[0]
 
-        # ── /admin/users → liste tous les users (admin only) ──
+        # ADMIN: list users
         if path == "/admin/users":
-            admin_key = self.headers.get("X-VT-Key","")
+            admin_key = self.headers.get("X-VT-Key", "")
             users = load_users()
-            admin = next((u for u in users.values() if u.get("apiKey")==admin_key and u.get("isAdmin")),None)
+            admin = next((u for u in users.values() if u.get("apiKey") == admin_key and u.get("isAdmin")), None)
             if not admin:
-                self.json_out(403,{"ok":False,"error":"Non autorisé"}); return
-            pub = {k:{kk:vv for kk,vv in v.items() if kk!="password"} for k,v in users.items()}
-            self.json_out(200,{"ok":True,"users":pub})
+                self.json_out(403, {"ok": False, "error": "Non autorisé"}); return
+            pub = {k: {kk: vv for kk, vv in v.items() if kk != "password"} for k, v in users.items()}
+            self.json_out(200, {"ok": True, "users": pub})
             return
 
-        # ── /auth/me → refresh session ──
+        # AUTH: session refresh
         if path == "/auth/me":
-            vt_key = self.headers.get("X-VT-Key","")
+            vt_key = self.headers.get("X-VT-Key", "")
             users = load_users()
-            for u,user in users.items():
+            for u, user in users.items():
                 if user.get("apiKey") == vt_key:
-                    pub = {k:v for k,v in user.items() if k!="password"}
-                    self.json_out(200,{"ok":True,"user":pub}); return
-            self.json_out(401,{"ok":False,"error":"Session expirée"})
+                    pub = {k: v for k, v in user.items() if k != "password"}
+                    self.json_out(200, {"ok": True, "user": pub}); return
+            self.json_out(401, {"ok": False, "error": "Session expirée"})
             return
 
-        # ── /api/discord/<id> ──
+        # ════ DISCORD LOOKUP ════
         if path.startswith("/api/discord/"):
-            vt_key = self.headers.get("X-VT-Key","")
-            ok, result, user = self.verify(vt_key,"discord")
+            vt_key = self.headers.get("X-VT-Key", "")
+            ok, result, user = self.verify(vt_key, "discord")
             if not ok:
-                self.json_out(403,{"status":"fail","message":result}); return
+                self.json_out(403, {"status": "fail", "message": result}); return
+            
             uid = path.split("/api/discord/")[1].strip("/")
             url = f"https://api.cord.cat/api/v2/query/{uid}"
             req = urllib.request.Request(url, headers={
                 "X-API-Key": API_KEY_DISCORD,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-                "Accept": "application/json",
-                "Origin": "https://cord.cat",
-                "Referer": "https://cord.cat/"
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/json"
             })
+            
             try:
                 with urllib.request.urlopen(req, timeout=12) as r:
                     body = r.read()
                 self.track(user)
                 self.send_response(200)
-                self.send_header("Content-Type","application/json")
-                self.cors(); self.end_headers()
+                self.send_header("Content-Type", "application/json")
+                self.cors()
+                self.end_headers()
                 self.wfile.write(body)
             except urllib.error.HTTPError as e:
                 body = e.read()
                 self.send_response(e.code)
-                self.send_header("Content-Type","application/json")
-                self.cors(); self.end_headers()
+                self.send_header("Content-Type", "application/json")
+                self.cors()
+                self.end_headers()
                 self.wfile.write(body)
             except Exception as e:
-                self.json_out(500,{"status":"fail","message":str(e)})
+                self.json_out(500, {"status": "fail", "message": str(e)})
             return
 
-        # ── /api/ip/<address> ──
+        # ════ IP LOOKUP ════
         if path.startswith("/api/ip/"):
-            vt_key = self.headers.get("X-VT-Key","")
-            ok, result, user = self.verify(vt_key,"ip")
+            vt_key = self.headers.get("X-VT-Key", "")
+            ok, result, user = self.verify(vt_key, "ip")
             if not ok:
-                self.json_out(403,{"status":"fail","message":result}); return
+                self.json_out(403, {"status": "fail", "message": result}); return
+            
             ip = path.split("/api/ip/")[1].strip("/")
             url = f"http://ip-api.com/json/{ip}?fields=66846719"
-            req = urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0","Accept":"application/json"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
+            
             try:
                 with urllib.request.urlopen(req, timeout=10) as r:
                     body = r.read()
                 self.track(user)
                 self.send_response(200)
-                self.send_header("Content-Type","application/json")
-                self.cors(); self.end_headers()
+                self.send_header("Content-Type", "application/json")
+                self.cors()
+                self.end_headers()
                 self.wfile.write(body)
             except Exception as e:
-                # fallback
                 try:
                     url2 = f"https://freeipapi.com/api/json/{ip}"
-                    req2 = urllib.request.Request(url2,headers={"User-Agent":"Mozilla/5.0","Accept":"application/json"})
-                    with urllib.request.urlopen(req2,timeout=10) as r2:
-                        raw=json.loads(r2.read())
-                    out={"status":"success","query":raw.get("ipAddress",ip),"country":raw.get("countryName",""),
-                         "countryCode":raw.get("countryCode",""),"regionName":raw.get("regionName",""),
-                         "city":raw.get("cityName",""),"zip":raw.get("zipCode",""),
-                         "lat":raw.get("latitude",0),"lon":raw.get("longitude",0),
-                         "timezone":raw.get("timeZone",""),"isp":"","org":"","as":"","asname":"",
-                         "reverse":"","mobile":False,"proxy":False,"hosting":False,"currency":""}
+                    req2 = urllib.request.Request(url2, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
+                    with urllib.request.urlopen(req2, timeout=10) as r2:
+                        raw = json.loads(r2.read())
+                    out = {
+                        "status": "success",
+                        "query": raw.get("ipAddress", ip),
+                        "country": raw.get("countryName", ""),
+                        "countryCode": raw.get("countryCode", ""),
+                        "regionName": raw.get("regionName", ""),
+                        "city": raw.get("cityName", ""),
+                        "zip": raw.get("zipCode", ""),
+                        "lat": raw.get("latitude", 0),
+                        "lon": raw.get("longitude", 0),
+                        "timezone": raw.get("timeZone", ""),
+                        "isp": "",
+                        "org": "",
+                        "as": "",
+                        "asname": "",
+                        "reverse": "",
+                        "mobile": False,
+                        "proxy": False,
+                        "hosting": False
+                    }
                     self.track(user)
-                    self.json_out(200,out)
+                    self.json_out(200, out)
                 except Exception as e2:
-                    self.json_out(500,{"status":"fail","message":str(e2)})
+                    self.json_out(500, {"status": "fail", "message": str(e2)})
             return
 
-        # ── Static files ──
+        # ════ BRIXHUB INFO LOOKUP ════
+        if path.startswith("/api/brix"):
+            vt_key = self.headers.get("X-VT-Key", "")
+            ok, result, user = self.verify(vt_key, "info")
+            if not ok:
+                self.json_out(403, {"ok": False, "message": result}); return
+            
+            parsed_url = urlparse(self.path)
+            params = parse_qs(parsed_url.query)
+            
+            prenom = params.get('prenom', [''])[0].strip()
+            nom_famille = params.get('nom', [''])[0].strip()
+            date_naissance = params.get('dob', [''])[0].strip()
+            ville = params.get('ville', [''])[0].strip()
+            code_postal = params.get('cp', [''])[0].strip()
+            
+            if not prenom and not nom_famille:
+                self.json_out(400, {"ok": False, "error": "Au moins le prénom ou nom requis"}); return
+            
+            # BrixHub API - POST /api/v1/search
+            try:
+                # Construire le body JSON avec les bons paramètres
+                body_data = {}
+                if prenom: body_data["prenom"] = prenom
+                if nom_famille: body_data["nom_famille"] = nom_famille
+                if date_naissance: body_data["date_naissance"] = date_naissance
+                if ville: body_data["ville"] = ville
+                if code_postal: body_data["code_postal"] = code_postal
+                
+                body_data["per_page"] = 10
+                
+                body_json = json.dumps(body_data).encode('utf-8')
+                
+                url = "https://brixhub.net/api/v1/search"
+                req = urllib.request.Request(url, 
+                    data=body_json,
+                    headers={
+                        "X-API-Key": API_KEY_BRIX,
+                        "Content-Type": "application/json",
+                        "User-Agent": "VoidTrace/1.0",
+                        "Accept": "application/json"
+                    },
+                    method="POST"
+                )
+                
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    response_body = r.read()
+                
+                self.track(user)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.cors()
+                self.end_headers()
+                self.wfile.write(response_body)
+            except urllib.error.HTTPError as e:
+                error_body = e.read()
+                self.send_response(e.code)
+                self.send_header("Content-Type", "application/json")
+                self.cors()
+                self.end_headers()
+                self.wfile.write(error_body)
+            except Exception as e:
+                self.json_out(500, {"status": "fail", "message": str(e)})
+            return
+
+        # ════ Static Files ════
         if path == "/" or path == "/index.html":
             path = "/" + SITE_FILE
         filepath = path.lstrip("/")
         if os.path.isfile(filepath):
-            mime,_ = mimetypes.guess_type(filepath)
+            mime, _ = mimetypes.guess_type(filepath)
             self.send_response(200)
             self.send_header("Content-Type", mime or "text/plain")
-            self.cors(); self.end_headers()
-            with open(filepath,"rb") as f:
+            self.cors()
+            self.end_headers()
+            with open(filepath, "rb") as f:
                 self.wfile.write(f.read())
         else:
-            self.send_response(404); self.end_headers(); self.wfile.write(b"Not found")
+            self.send_response(404)
+            self.end_headers()
+            self.wfile.write(b"Not found")
 
+    # ════ Verification & Tracking ════
     def verify(self, vt_key, permission):
         if not vt_key:
-            return False,"Clé API manquante",None
+            return False, "Clé API manquante", None
         users = load_users()
-        for u,user in users.items():
+        for u, user in users.items():
             if user.get("apiKey") == vt_key:
-                if not user.get("permissions",{}).get(permission,False):
-                    return False,f"Permission '{permission}' non activée pour ce compte",None
-                limit = PLANS.get(user.get("plan","free"),100)
+                if not user.get("permissions", {}).get(permission, False):
+                    return False, f"Permission '{permission}' non activée", None
+                limit = PLANS.get(user.get("plan", "free"), 100)
                 td = today_str()
                 if user.get("lastReqDay") != td:
-                    user["reqToday"]=0; user["lastReqDay"]=td
-                    users[u]=user; save_users(users)
-                if (user.get("reqToday",0)) >= limit:
-                    return False,f"Quota journalier atteint ({limit} req/jour)",None
-                return True,"ok",user
-        return False,"Clé API invalide",None
+                    user["reqToday"] = 0
+                    user["lastReqDay"] = td
+                    users[u] = user
+                    save_users(users)
+                if (user.get("reqToday", 0)) >= limit:
+                    return False, f"Quota journalier atteint ({limit} req/jour)", None
+                return True, "ok", user
+        return False, "Clé API invalide", None
 
     def track(self, user):
         if not user: return
@@ -336,13 +438,20 @@ class Handler(BaseHTTPRequestHandler):
         if u not in users: return
         td = today_str()
         if users[u].get("lastReqDay") != td:
-            users[u]["reqToday"]=0; users[u]["lastReqDay"]=td
-        users[u]["reqToday"] = users[u].get("reqToday",0)+1
-        users[u]["reqTotal"] = users[u].get("reqTotal",0)+1
+            users[u]["reqToday"] = 0
+            users[u]["lastReqDay"] = td
+        users[u]["reqToday"] = users[u].get("reqToday", 0) + 1
+        users[u]["reqTotal"] = users[u].get("reqTotal", 0) + 1
         save_users(users)
 
+# ════ Main ════
 if __name__ == "__main__":
-    print(f"\n  VoidTrace Proxy — http://localhost:{PORT}")
-    print(f"  Users : {USERS_FILE}")
-    print(f"  Ctrl+C pour arrêter\n")
-    HTTPServer(("", PORT), Handler).serve_forever()
+    print(f"\n  🔍 VoidTrace Proxy Server")
+    print(f"  Port: {PORT}")
+    print(f"  APIs: Cord.cat (Discord), IP-API, BrixHub")
+    print(f"  Listening on 0.0.0.0:{PORT}\n")
+    try:
+        HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+    except KeyboardInterrupt:
+        print("\n  Arrêté.")
+        sys.exit(0)
