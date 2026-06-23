@@ -447,4 +447,82 @@ class Handler(BaseHTTPRequestHandler):
         filepath = path.lstrip("/")
         if os.path.isfile(filepath):
             mime, _ = mimetypes.guess_type(filepath)
-            self.send_response(200
+                        self.send_response(200)
+            self.send_header("Content-Type", mime or "text/html")
+            self.cors()
+            self.end_headers()
+            with open(filepath, "rb") as f:
+                self.wfile.write(f.read())
+            return
+
+        # Si fichier introuvable
+        self.send_response(404)
+        self.send_header("Content-Type", "text/plain")
+        self.cors()
+        self.end_headers()
+        self.wfile.write(b"Not found")
+
+    # ════ Verification & Tracking ════
+    def verify(self, vt_key, permission):
+        if not vt_key:
+            return False, "Clé API manquante", None
+
+        users = load_users()
+        for u, user in users.items():
+            if user.get("apiKey") == vt_key:
+
+                # Reset journalier
+                if user.get("lastReqDay") != today_str():
+                    user["reqToday"] = 0
+                    user["lastReqDay"] = today_str()
+                    save_users(users)
+
+                # Admin bypass
+                if user.get("isAdmin"):
+                    return True, "ok", user
+
+                # Permissions
+                if not user.get("permissions", {}).get(permission, False):
+                    return False, f"Permission '{permission}' non activée", None
+
+                # Quota
+                limit = PLANS.get(user.get("plan", "free"), 100)
+                if user.get("reqToday", 0) >= limit:
+                    return False, f"Quota journalier atteint ({limit} req/jour)", None
+
+                return True, "ok", user
+
+        return False, "Clé API invalide", None
+
+    def track(self, user):
+        if not user:
+            return
+        users = load_users()
+        u = user["username"]
+
+        if u not in users:
+            return
+
+        # Reset journalier
+        if users[u].get("lastReqDay") != today_str():
+            users[u]["reqToday"] = 0
+            users[u]["lastReqDay"] = today_str()
+
+        users[u]["reqToday"] = users[u].get("reqToday", 0) + 1
+        users[u]["reqTotal"] = users[u].get("reqTotal", 0) + 1
+        save_users(users)
+
+
+# ════ Main server ════
+if __name__ == "__main__":
+    print("\n  🔍 VoidTrace Proxy Server")
+    print(f"  Port: {PORT}")
+    print("  APIs: Cord.cat (Discord), IP-API, BrixHub")
+    print(f"  Listening on 0.0.0.0:{PORT}\n")
+
+    try:
+        HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+    except KeyboardInterrupt:
+        print("\n  Arrêté.")
+        sys.exit(0)
+
