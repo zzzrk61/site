@@ -458,7 +458,7 @@ class Handler(BaseHTTPRequestHandler):
         # Si fichier introuvable
         self.send_response(404)
         self.send_header("Content-Type", "text/plain")
-         self.cors()
+        self.cors()
         self.end_headers()
         self.wfile.write(b"Not found")
 
