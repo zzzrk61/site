@@ -401,7 +401,7 @@ class Handler(BaseHTTPRequestHandler):
 
                 body_json = json.dumps(body_data).encode('utf-8')
 
-                url = "https://brixhub.net/api/v1/search"
+                url = "https://brixhub.top/api/v1/search"
                 req = urllib.request.Request(
                     url,
                     data=body_json,
