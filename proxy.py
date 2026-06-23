@@ -252,19 +252,24 @@ class Handler(BaseHTTPRequestHandler):
             url = f"https://api.cord.cat/api/v2/query/{uid}"
             req = urllib.request.Request(url, headers={
                 "X-API-Key": API_KEY_DISCORD,
-                "User-Agent": "Mozilla/5.0",
+                "User-Agent": "Mozilla/5.0 (VoidTrace)",
                 "Accept": "application/json"
             })
             
             try:
                 with urllib.request.urlopen(req, timeout=12) as r:
-                    body = r.read()
+                    raw = r.read()
+                try:
+                    json.loads(raw)
+                except:
+                    self.json_out(500, {"status": "fail", "message": "Réponse invalide de CordCat"}); return
+
                 self.track(user)
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.cors()
                 self.end_headers()
-                self.wfile.write(body)
+                self.wfile.write(raw)
             except urllib.error.HTTPError as e:
                 body = e.read()
                 self.send_response(e.code)
@@ -296,7 +301,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.cors()
                 self.end_headers()
                 self.wfile.write(body)
-            except Exception as e:
+            except Exception:
                 try:
                     url2 = f"https://freeipapi.com/api/json/{ip}"
                     req2 = urllib.request.Request(url2, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
@@ -339,7 +344,7 @@ class Handler(BaseHTTPRequestHandler):
             params = parse_qs(parsed_url.query)
             
             prenom = params.get('prenom', [''])[0].strip()
-            nom_famille = params.get('nom', [''])[0].strip()
+            nom_famille = params.get('nom_famille', [''])[0].strip()
             date_naissance = params.get('dob', [''])[0].strip()
             ville = params.get('ville', [''])[0].strip()
             code_postal = params.get('cp', [''])[0].strip()
@@ -347,9 +352,7 @@ class Handler(BaseHTTPRequestHandler):
             if not prenom and not nom_famille:
                 self.json_out(400, {"ok": False, "error": "Au moins le prénom ou nom requis"}); return
             
-            # BrixHub API - POST /api/v1/search
             try:
-                # Construire le body JSON avec les bons paramètres
                 body_data = {}
                 if prenom: body_data["prenom"] = prenom
                 if nom_famille: body_data["nom_famille"] = nom_famille
@@ -367,21 +370,26 @@ class Handler(BaseHTTPRequestHandler):
                     headers={
                         "X-API-Key": API_KEY_BRIX,
                         "Content-Type": "application/json",
-                        "User-Agent": "VoidTrace/1.0",
+                        "User-Agent": "Mozilla/5.0 (VoidTrace)",
                         "Accept": "application/json"
                     },
                     method="POST"
                 )
                 
                 with urllib.request.urlopen(req, timeout=10) as r:
-                    response_body = r.read()
+                    raw = r.read()
+
+                try:
+                    json.loads(raw)
+                except:
+                    self.json_out(500, {"status": "fail", "message": "Réponse invalide de BrixHub"}); return
                 
                 self.track(user)
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.cors()
                 self.end_headers()
-                self.wfile.write(response_body)
+                self.wfile.write(raw)
             except urllib.error.HTTPError as e:
                 error_body = e.read()
                 self.send_response(e.code)
@@ -414,44 +422,4 @@ class Handler(BaseHTTPRequestHandler):
     def verify(self, vt_key, permission):
         if not vt_key:
             return False, "Clé API manquante", None
-        users = load_users()
-        for u, user in users.items():
-            if user.get("apiKey") == vt_key:
-                if not user.get("permissions", {}).get(permission, False):
-                    return False, f"Permission '{permission}' non activée", None
-                limit = PLANS.get(user.get("plan", "free"), 100)
-                td = today_str()
-                if user.get("lastReqDay") != td:
-                    user["reqToday"] = 0
-                    user["lastReqDay"] = td
-                    users[u] = user
-                    save_users(users)
-                if (user.get("reqToday", 0)) >= limit:
-                    return False, f"Quota journalier atteint ({limit} req/jour)", None
-                return True, "ok", user
-        return False, "Clé API invalide", None
-
-    def track(self, user):
-        if not user: return
-        users = load_users()
-        u = user["username"]
-        if u not in users: return
-        td = today_str()
-        if users[u].get("lastReqDay") != td:
-            users[u]["reqToday"] = 0
-            users[u]["lastReqDay"] = td
-        users[u]["reqToday"] = users[u].get("reqToday", 0) + 1
-        users[u]["reqTotal"] = users[u].get("reqTotal", 0) + 1
-        save_users(users)
-
-# ════ Main ════
-if __name__ == "__main__":
-    print(f"\n  🔍 VoidTrace Proxy Server")
-    print(f"  Port: {PORT}")
-    print(f"  APIs: Cord.cat (Discord), IP-API, BrixHub")
-    print(f"  Listening on 0.0.0.0:{PORT}\n")
-    try:
-        HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
-    except KeyboardInterrupt:
-        print("\n  Arrêté.")
-        sys.exit(0)
+        users
