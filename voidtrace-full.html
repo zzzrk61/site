@@ -29,7 +29,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',syste
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* NAV */
 header{
   display:flex;align-items:center;justify-content:space-between;
   padding:0 52px;height:62px;border-bottom:1px solid var(--glass-border);
@@ -38,22 +37,11 @@ header{
 }
 .logo{font-weight:900;font-size:16px;color:#fff;cursor:pointer;user-select:none;letter-spacing:-.01em}
 .logo span{color:var(--accent)}
-.nav-links{display:flex;align-items:center;gap:4px}
-.nav-link{color:var(--text-dim);font-size:13px;padding:6px 14px;border-radius:8px;cursor:pointer;transition:all .15s;border:1px solid transparent}
-.nav-link:hover{color:var(--text);background:var(--glass)}
-.nav-link.active{color:var(--text);background:var(--glass);border-color:var(--glass-border)}
 .nav-right{display:flex;align-items:center;gap:10px}
 .pill-live{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);font-family:var(--mono);background:rgba(62,224,135,0.07);border:1px solid rgba(62,224,135,0.18);padding:4px 11px;border-radius:99px}
 .pulse{width:5px;height:5px;border-radius:50%;background:currentColor;animation:p 2s infinite}
 @keyframes p{0%,100%{opacity:1}50%{opacity:.2}}
-.btn-nav{background:var(--accent);color:#04101c;font-size:12px;font-weight:800;padding:7px 18px;border-radius:8px;border:none;cursor:pointer;transition:filter .15s}
-.btn-nav:hover{filter:brightness(1.1)}
 
-/* PAGES */
-.page{display:none}
-.page.active{display:block}
-
-/* ══════════ HOME ══════════ */
 .home-hero{
   position:relative;z-index:2;max-width:1160px;margin:0 auto;
   padding:96px 52px 72px;
@@ -69,7 +57,7 @@ h1{font-size:58px;line-height:1.03;font-weight:900;letter-spacing:-.04em;color:#
 h1 .dim{color:var(--text-dim)}
 .hero-lead{font-size:16px;color:var(--text-dim);line-height:1.7;max-width:440px;margin-bottom:36px}
 
-.mode-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
+.mode-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
 .mode-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .2s}
 .mode-card.active{background:rgba(62,166,255,0.07);border-color:rgba(62,166,255,0.3)}
 .mode-card:hover:not(.active){background:rgba(255,255,255,0.04)}
@@ -81,8 +69,6 @@ h1 .dim{color:var(--text-dim)}
 .mc-pill.info{background:rgba(167,139,250,0.1);color:var(--purple);border:1px solid rgba(167,139,250,0.2)}
 .mc-desc{font-size:12px;color:var(--text-dim);line-height:1.5}
 
-/* Search Interface */
-.search-container{margin-bottom:12px}
 .search-box{display:flex;background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--r);overflow:hidden;transition:border-color .2s;margin-bottom:12px}
 .search-box:focus-within{border-color:rgba(62,166,255,.5)}
 .s-prefix{display:flex;align-items:center;padding:0 14px;font-size:12px;font-family:var(--mono);color:var(--text-dim);border-right:1px solid var(--glass-border);background:rgba(62,166,255,0.03);white-space:nowrap}
@@ -92,9 +78,8 @@ h1 .dim{color:var(--text-dim)}
 #lookup-btn:hover{filter:brightness(1.1)}
 #lookup-btn:disabled{background:#22222e;color:var(--text-dim);cursor:not-allowed;filter:none}
 
-/* Info mode multi-field search */
-#info-search-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;display:none}
-#info-search-fields.active{display:grid}
+#info-fields{display:none;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+#info-fields.active{display:grid}
 .info-field{display:flex;flex-direction:column}
 .info-field label{font-size:11px;color:var(--text-dim);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
 .info-field input{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--rs);padding:8px 12px;font-size:12px;color:var(--text);font-family:var(--mono);outline:none}
@@ -105,7 +90,6 @@ h1 .dim{color:var(--text-dim)}
 .feature-row div{display:flex;align-items:center;gap:7px}
 .fdot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
 
-/* Hero terminal */
 .hero-terminal{background:var(--panel);border:1px solid var(--glass-border);border-radius:16px;overflow:hidden;box-shadow:0 40px 80px -20px rgba(0,0,0,.8)}
 .term-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;color:var(--text-dim);font-family:var(--mono)}
 .term-dots{display:flex;gap:6px}
@@ -119,21 +103,9 @@ h1 .dim{color:var(--text-dim)}
 .hstat-num{font-size:28px;font-weight:900;color:#fff;letter-spacing:-.03em}
 .hstat-label{font-size:13px;color:var(--text-dim);margin-top:5px}
 
-/* RESULT PAGE */
 .result-page-wrap{max-width:900px;margin:0 auto;padding:48px 52px 80px;position:relative;z-index:2}
 .result-back{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--text-dim);cursor:pointer;margin-bottom:32px;padding:7px 14px;border-radius:var(--rs);border:1px solid var(--glass-border);background:var(--glass);transition:all .15s}
 .result-back:hover{color:var(--text);border-color:rgba(62,166,255,.3)}
-
-/* Info Results */
-.info-results{background:var(--panel);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden}
-.info-result-header{padding:16px 20px;border-bottom:1px solid var(--glass-border);font-size:13px;font-weight:700;color:#fff}
-.info-result-item{border-bottom:1px solid rgba(255,255,255,.04);padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
-.info-result-item:last-child{border-bottom:none}
-.info-person{flex:1}
-.info-person-name{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px}
-.info-person-detail{font-size:12px;color:var(--text-dim);font-family:var(--mono)}
-.info-confidence{font-size:11px;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-glow)}
-.info-sources{font-size:10px;color:var(--text-dim);margin-top:6px}
 
 .result-loading{text-align:center;padding:80px 20px;font-family:var(--mono);font-size:13px;color:var(--text-dim)}
 .loading-bar{height:2px;background:rgba(255,255,255,.05);overflow:hidden;position:relative;max-width:300px;margin:16px auto 0}
@@ -141,20 +113,21 @@ h1 .dim{color:var(--text-dim)}
 @keyframes ls{to{left:130%}}
 .result-error{text-align:center;padding:80px 20px;font-family:var(--mono);font-size:14px;color:var(--red)}
 
-/* Responsive */
+.info-results{background:var(--panel);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden}
+.info-result-item{border-bottom:1px solid rgba(255,255,255,.04);padding:14px 20px;display:flex;justify-content:space-between;align-items:flex-start}
+.info-result-item:last-child{border-bottom:none}
+.info-person{flex:1}
+.info-person-name{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px}
+.info-person-detail{font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-bottom:2px}
+.info-confidence{font-size:11px;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-glow);white-space:nowrap}
+
 @media(max-width:960px){
   .home-hero{grid-template-columns:1fr;padding:64px 28px 48px}
   .hero-terminal{display:none}
   .home-stats{grid-template-columns:repeat(2,1fr);padding:0 28px 60px}
   .mode-cards{grid-template-columns:1fr}
-  #info-search-fields{grid-template-columns:1fr}
   header{padding:0 24px}
   h1{font-size:42px}
-}
-@media(max-width:560px){
-  .mode-cards{grid-template-columns:1fr}
-  h1{font-size:36px}
-  .home-stats{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
@@ -162,28 +135,27 @@ h1 .dim{color:var(--text-dim)}
 <div class="globe"></div>
 
 <header>
-  <div class="logo" onclick="goTo('home')">void<span>trace</span></div>
+  <div class="logo" onclick="location.reload()">void<span>trace</span></div>
   <div class="nav-right">
     <div class="pill-live"><span class="pulse"></span>ONLINE</div>
   </div>
 </header>
 
-<!-- ══════════ HOME ══════════ -->
-<div class="page active" id="page-home">
+<div id="page-home" class="page active">
   <div class="home-hero">
     <div>
-      <div class="hero-eyebrow">&gt;_ OSINT Intelligence Platform</div>
+      <div class="hero-eyebrow">&gt;_ OSINT Intelligence Platform By CordCat</div>
       <h1>Trace any<br><span class="dim">identity</span><br>in seconds.</h1>
-      <p class="hero-lead">Discord IDs, adresses IP, et données personnelles résolues instantanément via sources publiques.</p>
+      <p class="hero-lead">Discord IDs, adresses IP, et données personnelles. Tout résolus instantanément via sources publiques.</p>
       
       <div class="mode-cards">
         <div class="mode-card active" id="card-discord" onclick="switchMode('discord')">
           <div class="mc-header"><span class="mc-title">Discord ID</span><span class="mc-pill discord">DISCORD</span></div>
-          <div class="mc-desc">Profil, avatar, badges Nitro, date de création</div>
+          <div class="mc-desc">Profil, avatar, badges Nitro, date de création, flags publics</div>
         </div>
         <div class="mode-card" id="card-ip" onclick="switchMode('ip')">
           <div class="mc-header"><span class="mc-title">IP Address</span><span class="mc-pill ip">IP</span></div>
-          <div class="mc-desc">Pays, région, ISP, ASN, géolocalisation GPS</div>
+          <div class="mc-desc">Pays, région, ISP, ASN, détection proxy/VPN, coordonnées GPS</div>
         </div>
         <div class="mode-card" id="card-info" onclick="switchMode('info')">
           <div class="mc-header"><span class="mc-title">Info Personne</span><span class="mc-pill info">BRIXHUB</span></div>
@@ -191,107 +163,82 @@ h1 .dim{color:var(--text-dim)}
         </div>
       </div>
 
-      <div class="search-container">
-        <!-- Discord / IP search -->
-        <div class="search-box">
-          <div class="s-prefix" id="s-prefix">$ discord /</div>
-          <input type="text" id="query-input" placeholder="803511102246789120" autocomplete="off" spellcheck="false"/>
-          <button id="lookup-btn" onclick="runLookup()">Rechercher →</button>
-        </div>
+      <div class="search-box">
+        <div class="s-prefix" id="s-prefix">$ discord /</div>
+        <input type="text" id="query-input" placeholder="803511102246789120" autocomplete="off" spellcheck="false"/>
+        <button id="lookup-btn" onclick="runLookup()">Rechercher →</button>
+      </div>
 
-        <!-- Info search fields -->
-        <div id="info-search-fields">
-          <div class="info-field">
-            <label>Prénom</label>
-            <input type="text" id="info-prenom" placeholder="Jean"/>
-          </div>
-          <div class="info-field">
-            <label>Nom de famille</label>
-            <input type="text" id="info-nom" placeholder="Dupont"/>
-          </div>
-          <div class="info-field">
-            <label>Ville</label>
-            <input type="text" id="info-ville" placeholder="Paris"/>
-          </div>
-          <div class="info-field">
-            <label>Code postal</label>
-            <input type="text" id="info-codepostal" placeholder="75001"/>
-          </div>
-          <div class="info-field">
-            <label>Email</label>
-            <input type="text" id="info-email" placeholder="jean@email.com"/>
-          </div>
-          <div class="info-field">
-            <label>Téléphone</label>
-            <input type="text" id="info-phone" placeholder="06 12 34 56 78"/>
-          </div>
-          <button id="lookup-btn" style="grid-column:1/3;margin-top:8px" onclick="runLookup()">Rechercher →</button>
-        </div>
+      <div id="info-fields">
+        <div class="info-field"><label>Prénom</label><input type="text" id="info-prenom" placeholder="Jean"/></div>
+        <div class="info-field"><label>Nom</label><input type="text" id="info-nom" placeholder="Dupont"/></div>
+        <div class="info-field"><label>Ville</label><input type="text" id="info-ville" placeholder="Paris"/></div>
+        <div class="info-field"><label>Code postal</label><input type="text" id="info-cp" placeholder="75001"/></div>
+        <div class="info-field"><label>Email</label><input type="text" id="info-email" placeholder="jean@email.com"/></div>
+        <div class="info-field"><label>Téléphone</label><input type="text" id="info-phone" placeholder="06 12 34 56 78"/></div>
       </div>
 
       <div class="search-hint" id="mode-hint">Snowflake Discord · 17 à 20 chiffres</div>
       <div class="feature-row">
-        <div><span class="fdot"></span>Sources publiques</div>
+        <div><span class="fdot"></span>Sources directes</div>
         <div><span class="fdot"></span>Réponse &lt; 2s</div>
-        <div><span class="fdot"></span>Données OSINT</div>
+        <div><span class="fdot"></span>Sans compte</div>
+        <div><span class="fdot"></span>API disponible</div>
       </div>
     </div>
 
-    <!-- Terminal preview -->
     <div class="hero-terminal">
       <div class="term-bar">
         <div class="term-dots"><span></span><span></span><span></span></div>
         <div>voidtrace / query</div>
-        <div class="term-live"><span class="pulse"></span>live</div>
+        <div class="term-live"><span class="pulse"></span>en direct</div>
       </div>
-      <div class="term-preview-line">$ lookup <b>"Jean Dupont"</b></div>
-      <div class="term-preview-line" style="color:var(--text)">▸ 3 enregistrements trouvés</div>
-      <div class="term-preview-line">├─ Paris, 75001 · <span style="color:var(--green)">jean@email.com</span></div>
-      <div class="term-preview-line">├─ Lyon, 69000 · <span style="color:var(--green)">+33612345678</span></div>
-      <div class="term-preview-line">└─ Marseille, 13000 · <span style="color:var(--yellow)">confidence: 92%</span></div>
-      <div class="term-preview-line" style="color:var(--accent)">Requête: 143ms · BrixHub</div>
+      <div class="term-preview-line">$ lookup <b>"565414998277488641"</b></div>
+      <div class="term-preview-line" style="display:flex;align-items:center;gap:12px;padding:16px 18px">
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--accent-soft);border:1px solid var(--accent-glow);flex-shrink:0;overflow:hidden"><img src="https://cdn.discordapp.com/avatars/565414998277488641/a_placeholder.png" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'" /></div>
+        <div><div style="font-size:14px;font-weight:700;color:#fff">easy</div><div style="font-size:12px;color:var(--text-dim);font-family:var(--mono)">@8mpy</div></div>
+      </div>
+      <div style="padding:12px 18px;font-family:var(--mono);font-size:12px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,.04)"><span style="color:var(--text-dim)">Snowflake ID</span> <span style="color:var(--accent)">5654149982...</span></div>
+      <div style="padding:12px 18px;font-family:var(--mono);font-size:12px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,.04)"><span style="color:var(--text-dim)">Création</span> <span style="color:#fff">10/04/2019</span></div>
+      <div style="padding:12px 18px;font-family:var(--mono);font-size:12px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,.04)"><span style="color:var(--text-dim)">Âge du compte</span> <span style="color:var(--green)">7a 3mo</span></div>
+      <div style="padding:12px 18px;font-family:var(--mono);font-size:12px;color:var(--text-dim)"><span style="color:var(--text-dim)">Premium</span> <span style="color:var(--purple)">Aucun</span></div>
     </div>
   </div>
 
   <div class="home-stats">
     <div class="hstat"><div class="hstat-num">3</div><div class="hstat-label">Modes de recherche</div></div>
     <div class="hstat"><div class="hstat-num">&lt; 2s</div><div class="hstat-label">Temps de réponse</div></div>
-    <div class="hstat"><div class="hstat-num">100%</div><div class="hstat-label">Données publiques</div></div>
+    <div class="hstat"><div class="hstat-num">100%</div><div class="hstat-label">Sources publiques</div></div>
     <div class="hstat"><div class="hstat-num">OSINT</div><div class="hstat-label">Intelligence</div></div>
   </div>
 </div>
 
-<!-- ══════════ RESULT ══════════ -->
-<div class="page" id="page-result">
+<div id="page-result" class="page" style="display:none">
   <div class="result-page-wrap">
-    <div class="result-back" onclick="goTo('home');document.getElementById('query-input').value=''">← Nouvelle recherche</div>
+    <div class="result-back" onclick="goTo('home')">← Nouvelle recherche</div>
     <div id="result-content"></div>
   </div>
 </div>
-
-<footer style="position:relative;z-index:2;border-top:1px solid var(--glass-border);padding:40px 52px;text-align:center;font-size:12px;color:var(--text-dim)">
-  © 2025 VoidTrace · Données 100% publiques · OSINT Intelligence Platform
-</footer>
 
 <script>
 const API_CONFIG = {
   discord: {url: "/api/discord/{query}", method: "GET"},
   ip: {url: "/api/ip/{query}", method: "GET"},
-  info: {url: "https://api.brixhub.ch/api/v1/search", method: "POST"}
+  info: {url: "/api/brixhub", method: "POST"}
 };
 
-const BRIXHUB_API_KEY = "brix_KTPmOgV_-S_jgq1I7kf80AYeW-M85qyfGquHOaLT0Pb4Q5fP";
 let mode = 'discord';
 
 function goTo(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + page).style.display = 'block';
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 function switchMode(m) {
   mode = m;
-  const fields = document.getElementById('info-search-fields');
+  const queryBox = document.querySelector('.search-box');
+  const fields = document.getElementById('info-fields');
   const queryInput = document.getElementById('query-input');
   const prefix = document.getElementById('s-prefix');
   const hint = document.getElementById('mode-hint');
@@ -301,20 +248,19 @@ function switchMode(m) {
   document.getElementById('card-info').classList.toggle('active', m === 'info');
 
   if (m === 'discord') {
-    queryInput.style.display = 'block';
+    queryBox.style.display = 'flex';
     fields.classList.remove('active');
     queryInput.placeholder = '803511102246789120';
     prefix.textContent = '$ discord /';
     hint.textContent = 'Snowflake Discord · 17 à 20 chiffres';
   } else if (m === 'ip') {
-    queryInput.style.display = 'block';
+    queryBox.style.display = 'flex';
     fields.classList.remove('active');
     queryInput.placeholder = '1.1.1.1';
     prefix.textContent = '$ ip /';
     hint.textContent = 'Adresse IPv4 ou IPv6';
   } else if (m === 'info') {
-    queryInput.style.display = 'none';
-    prefix.style.display = 'none';
+    queryBox.style.display = 'none';
     fields.classList.add('active');
     hint.textContent = 'Recherche multi-critères via BrixHub';
   }
@@ -336,7 +282,7 @@ async function runLookup() {
     const nom = document.getElementById('info-nom').value.trim();
     const email = document.getElementById('info-email').value.trim();
     if (!prenom && !nom && !email) {
-      alert('Entrez au moins un critère (prénom, nom ou email)');
+      alert('Entrez au moins un critère');
       return;
     }
     valid = true;
@@ -349,11 +295,7 @@ async function runLookup() {
   btn.textContent = '...';
 
   goTo('result');
-  document.getElementById('result-content').innerHTML = `
-    <div class="result-loading">
-      <div style="font-size:13px;color:var(--text-dim)">Interrogation des sources…</div>
-      <div class="loading-bar"></div>
-    </div>`;
+  document.getElementById('result-content').innerHTML = `<div class="result-loading">Interrogation des sources…<div class="loading-bar"></div></div>`;
 
   try {
     if (mode === 'discord' || mode === 'ip') {
@@ -364,84 +306,77 @@ async function runLookup() {
       const data = await r.json();
       
       if (mode === 'discord') {
-        renderDiscordResult(q, data, r.status);
+        renderDiscord(q, data, r.status);
       } else {
-        renderIPResult(q, data, r.status);
+        renderIP(q, data, r.status);
       }
     } else if (mode === 'info') {
       const prenom = document.getElementById('info-prenom').value.trim();
       const nom = document.getElementById('info-nom').value.trim();
       const ville = document.getElementById('info-ville').value.trim();
-      const codepostal = document.getElementById('info-codepostal').value.trim();
+      const cp = document.getElementById('info-cp').value.trim();
       const email = document.getElementById('info-email').value.trim();
       const phone = document.getElementById('info-phone').value.trim();
 
-      const body = {};
+      const body = {
+        flexible: true,
+        per_page: 20
+      };
       if (prenom) body.prenom = prenom;
       if (nom) body.nom_famille = nom;
       if (ville) body.ville = ville;
-      if (codepostal) body.code_postal = codepostal;
+      if (cp) body.code_postal = cp;
       if (email) body.email = email;
       if (phone) body.telephone = phone;
-      body.flexible = true;
-      body.per_page = 20;
 
       const r = await fetch(API_CONFIG.info.url, {
         method: 'POST',
-        headers: {
-          'X-API-Key': BRIXHUB_API_KEY,
-          'Content-Type': 'application/json'
-        },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(body)
       });
 
       const data = await r.json();
-      renderInfoResult(data, r.status);
+      renderInfo(data, r.status);
     }
   } catch (e) {
-    document.getElementById('result-content').innerHTML = `
-      <div class="result-error">⚠ ${esc(e.message || 'Erreur de requête')}</div>`;
+    document.getElementById('result-content').innerHTML = `<div class="result-error">⚠ ${esc(e.message || 'Erreur')}</div>`;
   }
 
   btn.disabled = false;
   btn.textContent = 'Rechercher →';
 }
 
-function renderDiscordResult(q, data, status) {
+function renderDiscord(q, data, status) {
   if (status !== 200 || data.error) {
-    document.getElementById('result-content').innerHTML = `
-      <div class="result-error">⚠ ${esc(data.error || data.message || 'Utilisateur non trouvé')}</div>`;
+    document.getElementById('result-content').innerHTML = `<div class="result-error">⚠ ${esc(data.error || 'Utilisateur non trouvé')}</div>`;
     return;
   }
   
   const u = data.userInfo || {};
-  const username = u.username || u.global_name || '—';
-  const displayName = u.global_name || u.display_name || username;
-  const id = u.id || q;
-  const avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${id}/${u.avatar}.png?size=256` : null;
+  const username = u.username || '—';
+  const displayName = u.global_name || username;
+  const avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id || q}/${u.avatar}.png?size=256` : null;
 
   document.getElementById('result-content').innerHTML = `
-    <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:16px;padding:24px;margin-bottom:20px">
+    <div style="background:var(--panel);border:1px solid var(--glass-border);border-radius:16px;padding:24px">
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
-        ${avatar ? `<img src="${avatar}" style="width:60px;height:60px;border-radius:50%;border:2px solid var(--accent-glow)" />` : `<div style="width:60px;height:60px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--accent)">?</div>`}
+        ${avatar ? `<img src="${avatar}" style="width:60px;height:60px;border-radius:50%;border:2px solid var(--accent-glow)" />` : `<div style="width:60px;height:60px;border-radius:50%;background:var(--accent-soft)"></div>`}
         <div>
           <div style="font-size:20px;font-weight:900;color:#fff">${esc(displayName)}</div>
           <div style="font-size:12px;color:var(--text-dim);font-family:var(--mono)">@${esc(username)}</div>
-          <div style="font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:4px">${esc(id)}</div>
+          <div style="font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:4px">${esc(u.id || q)}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px">
         <div><span style="color:var(--text-dim)">Premium:</span> <span style="color:#fff">${u.premium_type ? 'Oui' : 'Non'}</span></div>
         <div><span style="color:var(--text-dim)">Bot:</span> <span style="color:#fff">${u.bot ? 'Oui' : 'Non'}</span></div>
-        <div><span style="color:var(--text-dim)">Créé:</span> <span style="color:#fff">${u.created_at || '—'}</span></div>
       </div>
     </div>`;
 }
 
-function renderIPResult(q, data, status) {
+function renderIP(q, data, status) {
   if (data.status !== 'success') {
-    document.getElementById('result-content').innerHTML = `
-      <div class="result-error">⚠ ${esc(data.message || 'Lookup échoué')}</div>`;
+    document.getElementById('result-content').innerHTML = `<div class="result-error">⚠ ${esc(data.message || 'Lookup échoué')}</div>`;
     return;
   }
 
@@ -452,42 +387,26 @@ function renderIPResult(q, data, status) {
         <div><span style="color:var(--text-dim)">Pays:</span> <span style="color:#fff">${esc(data.country || '—')}</span></div>
         <div><span style="color:var(--text-dim)">Ville:</span> <span style="color:#fff">${esc(data.city || '—')}</span></div>
         <div><span style="color:var(--text-dim)">ISP:</span> <span style="color:#fff">${esc(data.isp || '—')}</span></div>
-        <div><span style="color:var(--text-dim)">ASN:</span> <span style="color:var(--purple);font-family:var(--mono)">${esc(data.as || '—')}</span></div>
-        <div><span style="color:var(--text-dim)">Proxy:</span> <span style="color:${data.proxy ? 'var(--red)' : 'var(--green)'}">${data.proxy ? 'Détecté' : 'Aucun'}</span></div>
       </div>
-      ${data.lat && data.lon ? `<div style="margin-top:16px;font-size:11px;color:var(--text-dim)">📍 ${data.lat}, ${data.lon}</div>` : ''}
     </div>`;
 }
 
-function renderInfoResult(data, status) {
-  if (data.status !== 200 || !data.data || !data.data.results || data.data.results.length === 0) {
-    document.getElementById('result-content').innerHTML = `
-      <div class="result-error">⚠ Aucun résultat trouvé</div>`;
+function renderInfo(data, status) {
+  if (!data.data || !data.data.results || data.data.results.length === 0) {
+    document.getElementById('result-content').innerHTML = `<div class="result-error">⚠ Aucun résultat trouvé</div>`;
     return;
   }
 
   const results = data.data.results;
   const html = `
     <div class="info-results">
-      <div class="info-result-header">
-        ${results.length} résultat${results.length > 1 ? 's' : ''} trouvé${results.length > 1 ? 's' : ''}
-      </div>
       ${results.map(r => `
         <div class="info-result-item">
           <div class="info-person">
-            <div class="info-person-name">
-              ${esc((r.prenom || '') + ' ' + (r.nom_famille || ''))}
-            </div>
-            <div class="info-person-detail">
-              ${r.email ? `📧 ${esc(r.email)}` : ''}
-              ${r.telephone ? `${r.email ? ' · ' : ''}☎️ ${esc(r.telephone)}` : ''}
-            </div>
-            <div class="info-person-detail" style="margin-top:4px">
-              ${r.code_postal ? `${esc(r.code_postal)}` : ''} 
-              ${r.ville ? `${esc(r.ville)}` : ''}
-              ${r.pays ? `, ${esc(r.pays)}` : ''}
-            </div>
-            ${r._sources ? `<div class="info-sources">Sources: ${r._sources.join(', ')}</div>` : ''}
+            <div class="info-person-name">${esc((r.prenom || '') + ' ' + (r.nom_famille || ''))}</div>
+            ${r.email ? `<div class="info-person-detail">📧 ${esc(r.email)}</div>` : ''}
+            ${r.telephone ? `<div class="info-person-detail">☎️ ${esc(r.telephone)}</div>` : ''}
+            <div class="info-person-detail">📍 ${esc(r.code_postal || '')} ${esc(r.ville || '')}</div>
           </div>
           ${r._confidence ? `<div class="info-confidence">${r._confidence}%</div>` : ''}
         </div>
@@ -498,18 +417,12 @@ function renderInfoResult(data, status) {
 }
 
 function esc(s) {
-  if (s == null) return '—';
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  if (!s) return '—';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-  switchMode('discord');
-});
+switchMode('discord');
 </script>
+
 </body>
 </html>
