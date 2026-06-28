@@ -9,7 +9,6 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request, urllib.error, json, os, mimetypes
 
 API_KEY_DISCORD = "cc_8b7545d8d46432196c93142dbeba9665e062217d459e1f5d"
-API_KEY_BRIXHUB = "brix_vplzbbZhnCZy-gmJFMoJ78xFYYyUGjxfnQYA3OURtXqbEFd8"  # <-- Ajoute ta clé API ici
 SITE_FILE       = "voidtrace-full.html"
 PORT            = 8000
 
@@ -29,7 +28,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = self.path.split("?")[0]
 
-        # Proxy vers CordCat
+        # /api/discord/<id>  → proxy vers CordCat
         if path.startswith("/api/discord/"):
             uid = path.split("/api/discord/")[1].strip("/")
             url = f"https://api.cord.cat/api/v2/query/{uid}"
@@ -59,9 +58,13 @@ class Handler(BaseHTTPRequestHandler):
                 self._json_err(500, str(e))
             return
 
-        # Proxy vers IP-API / fallback à freeipapi
+        # /api/ip/<address> → proxy CORS pour ip-api.com
+        # ip-api bloque les requêtes serveur → on renvoie une redirection
+        # vers un proxy CORS public, ou on laisse le browser appeler directement
+        # Solution : on fait un proxy transparent avec les bons headers
         if path.startswith("/api/ip/"):
             ip = path.split("/api/ip/")[1].strip("/")
+            # Essai avec http (ip-api ne supporte pas https sur plan gratuit)
             url = f"http://ip-api.com/json/{ip}?fields=66846719"
             req = urllib.request.Request(url, headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
@@ -76,13 +79,13 @@ class Handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(body)
             except urllib.error.HTTPError as e:
-                # fallback à freeipapi
+                # Fallback: essai freeipapi
                 try:
                     url2 = f"https://freeipapi.com/api/json/{ip}"
                     req2 = urllib.request.Request(url2, headers={"User-Agent":"Mozilla/5.0","Accept":"application/json"})
                     with urllib.request.urlopen(req2, timeout=10) as r2:
                         raw = json.loads(r2.read())
-                    # Normaliser vers format ip-api
+                    # normaliser vers format ip-api
                     out = {
                         "status": "success",
                         "query": raw.get("ipAddress", ip),
@@ -112,35 +115,6 @@ class Handler(BaseHTTPRequestHandler):
                     self.wfile.write(body)
                 except Exception as e2:
                     self._json_err(500, f"ip-api: {e}, fallback: {e2}")
-            except Exception as e:
-                self._json_err(500, str(e))
-            return
-
-        # Proxy vers BrixHub API
-        if path.startswith("/api/brixhub/") or path.startswith("/api/search") or path.startswith("/api/v1/"):
-            # Utilisation de la clé API BrixHub
-            url = f"https://api.brixhub.ch{path}"
-            req = urllib.request.Request(url, headers={
-                "X-API-Key": API_KEY_BRIXHUB,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-            })
-            # Si c'est une requête POST, il faut gérer aussi (si nécessaire)
-            # Mais ici, pour GET, c'est suffisant
-            try:
-                with urllib.request.urlopen(req, timeout=10) as r:
-                    body = r.read()
-                self.send_response(r.getcode())
-                self.send_header("Content-Type", r.getheader("Content-Type") or "application/json")
-                self.send_cors()
-                self.end_headers()
-                self.wfile.write(body)
-            except urllib.error.HTTPError as e:
-                body = e.read()
-                self.send_response(e.code)
-                self.send_header("Content-Type", e.headers.get("Content-Type", "application/json"))
-                self.send_cors()
-                self.end_headers()
-                self.wfile.write(body)
             except Exception as e:
                 self._json_err(500, str(e))
             return
