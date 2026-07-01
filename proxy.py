@@ -2,21 +2,21 @@
 """
 VoidTrace Proxy Server — BrixHub Integration
 Lance avec : python proxy.py
-Accès site  : http://localhost:8000
+Accès : http://localhost:8000 (local) ou https://votre-domain.onrender.com (Render)
 """
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import urllib.request, urllib.error, json, os, mimetypes
+import urllib.request, urllib.error, json, os, mimetypes, sys
 
 # ════ CONFIG ════
 BRIXHUB_API_KEY = "brix_q6YoXWsB4wSJgjjnv8hXJMrbc9DfYAOMTCWP9e_CSiImM0x6"
 BRIXHUB_BASE    = "https://api.brixhub.ch/api/v1"
 SITE_FILE       = "voidtrace-brixhub.html"
-PORT            = 8000
+PORT            = int(os.environ.get('PORT', 8000))
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
-        print(f"  {self.address_string()} — {fmt % args}")
+        print(f"  {self.address_string()} — {fmt % args}", file=sys.stdout, flush=True)
 
     def send_cors(self):
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -31,12 +31,18 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         path = self.path.split("?")[0]
         
-        # /api/search → proxy vers BrixHub /search
+        # POST /api/search → proxy vers BrixHub /search
         if path == "/api/search":
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 body = self.rfile.read(content_length)
                 search_data = json.loads(body)
+                
+                # Ajouter les paramètres BrixHub par défaut
+                if 'flexible' not in search_data:
+                    search_data['flexible'] = True
+                if 'per_page' not in search_data:
+                    search_data['per_page'] = 50
                 
                 url = f"{BRIXHUB_BASE}/search"
                 req = urllib.request.Request(url, 
@@ -71,17 +77,17 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = self.path.split("?")[0]
 
-        # /api/lookup/email/<email> → proxy vers BrixHub /lookup/email/{email}
+        # GET /api/lookup/email/<email> → proxy vers BrixHub /lookup/email/{email}
         if path.startswith("/api/lookup/email/"):
             email = path.split("/api/lookup/email/")[1].strip("/")
             return self._brixhub_lookup("email", email)
 
-        # /api/lookup/phone/<phone> → proxy vers BrixHub /lookup/phone/{phone}
+        # GET /api/lookup/phone/<phone> → proxy vers BrixHub /lookup/phone/{phone}
         if path.startswith("/api/lookup/phone/"):
             phone = path.split("/api/lookup/phone/")[1].strip("/")
             return self._brixhub_lookup("phone", phone)
 
-        # /api/lookup/iban/<iban> → proxy vers BrixHub /lookup/iban/{iban}
+        # GET /api/lookup/iban/<iban> → proxy vers BrixHub /lookup/iban/{iban}
         if path.startswith("/api/lookup/iban/"):
             iban = path.split("/api/lookup/iban/")[1].strip("/")
             return self._brixhub_lookup("iban", iban)
@@ -91,23 +97,50 @@ class Handler(BaseHTTPRequestHandler):
             path = "/" + SITE_FILE
         
         filepath = path.lstrip("/")
-        if os.path.isfile(filepath):
-            mime, _ = mimetypes.guess_type(filepath)
-            self.send_response(200)
-            self.send_header("Content-Type", mime or "text/plain")
-            self.send_cors()
-            self.end_headers()
-            with open(filepath, "rb") as f:
-                self.wfile.write(f.read())
+        
+        # Chercher le fichier HTML
+        search_paths = [
+            filepath,
+            f"/mnt/user-data/outputs/{filepath}",
+            f"./{filepath}",
+            os.path.join(os.path.dirname(__file__), filepath)
+        ]
+        
+        actual_path = None
+        for candidate in search_paths:
+            if os.path.isfile(candidate):
+                actual_path = candidate
+                break
+        
+        if actual_path:
+            try:
+                mime, _ = mimetypes.guess_type(actual_path)
+                self.send_response(200)
+                self.send_header("Content-Type", mime or "text/html; charset=utf-8")
+                self.send_cors()
+                
+                # Lire la taille du fichier
+                file_size = os.path.getsize(actual_path)
+                self.send_header("Content-Length", str(file_size))
+                self.end_headers()
+                
+                with open(actual_path, "rb") as f:
+                    self.wfile.write(f.read())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "text/plain")
+                self.send_cors()
+                self.end_headers()
+                self.wfile.write(f"500 Error: {str(e)}".encode())
         else:
             self.send_response(404)
             self.send_header("Content-Type", "text/plain")
             self.send_cors()
             self.end_headers()
-            self.wfile.write(b"Not found")
+            self.wfile.write(f"404 Not Found".encode())
 
     def _brixhub_lookup(self, lookup_type, query):
-        """Proxy générique vers les endpoints /lookup de BrixHub"""
+        """Proxy vers les endpoints /lookup de BrixHub"""
         try:
             url = f"{BRIXHUB_BASE}/lookup/{lookup_type}/{urllib.parse.quote(query)}"
             req = urllib.request.Request(url, 
@@ -146,13 +179,18 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     print(f"\n  ⚡ VoidTrace Proxy Server")
-    print(f"  → http://localhost:{PORT}")
-    print(f"  📄 Fichier HTML: {SITE_FILE}")
-    print(f"  🔑 API Key: {BRIXHUB_API_KEY[:20]}...")
-    print(f"  ✓ Endpoints: /api/search, /api/lookup/email, /api/lookup/phone, /api/lookup/iban")
-    print(f"  Ctrl+C pour arrêter\n")
+    print(f"  🌐 http://localhost:{PORT}")
+    print(f"  📄 Fichier: {SITE_FILE}")
+    print(f"  🔑 API: {BRIXHUB_API_KEY[:20]}...")
+    print(f"  ✓ Endpoints: /api/search, /api/lookup/*")
+    print(f"  ⏹  Ctrl+C pour arrêter\n")
     
     try:
-        HTTPServer(("", PORT), Handler).serve_forever()
+        server = HTTPServer(("0.0.0.0", PORT), Handler)
+        print(f"  ✓ Serveur lancé sur le port {PORT}\n")
+        server.serve_forever()
     except KeyboardInterrupt:
         print("\n\n  ✓ Serveur arrêté")
+    except Exception as e:
+        print(f"\n  ✗ Erreur: {e}")
+        sys.exit(1)
