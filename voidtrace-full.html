@@ -583,11 +583,9 @@ footer{position:relative;z-index:2;border-top:1px solid var(--glass-border);padd
   </div>
 </footer>
 
-<script>
-const API_BASE = 'http://localhost:8000';
 
-function esc(s){if(s==null)return'—';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
+const API_BASE = window.location.origin;
 function goTo(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
