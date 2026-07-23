@@ -11,7 +11,7 @@ import urllib.request, urllib.error, json, os, mimetypes
 CORDCAT_API_KEY = "cc_4620fd6426ade7188865631415209cf36c002089ee909b06"
 CORDCAT_BASE    = "https://api.cord.cat"
 IPAPI_BASE      = "http://ip-api.com/json"
-SITE_FILE       = "voidtrace.html"
+SITE_FILE       = "voidtrace-full.html"
 PORT            = int(os.environ.get('PORT', 8000))
 
 class Handler(BaseHTTPRequestHandler):
