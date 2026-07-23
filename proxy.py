@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """
 VoidTrace Proxy Server
-Lance avec : python proxy.py
+Lance avec : python voidtrace_proxy.py
 Accès site  : http://localhost:8000
 """
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request, urllib.error, json, os, mimetypes
 
-BRIXHUB_API_KEY = "brix_q6YoXWsB4wSJgjjnv8hXJMrbc9DfYAOMTCWP9e_CSiImM0x6"
-BRIXHUB_BASE    = "https://api.brixhub.ch/api/v1"
-SITE_FILE       = "voidtrace-full.html"
+CORDCAT_API_KEY = "cc_4620fd6426ade7188865631415209cf36c002089ee909b06"
+CORDCAT_BASE    = "https://api.cord.cat"
+IPAPI_BASE      = "http://ip-api.com/json"
+SITE_FILE       = "voidtrace.html"
 PORT            = int(os.environ.get('PORT', 8000))
 
 class Handler(BaseHTTPRequestHandler):
@@ -29,39 +30,50 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         path = self.path.split("?")[0]
 
-        # POST /api/search → proxy vers BrixHub
+        # POST /api/search → CordCat Discord + ip-api.com
         if path == "/api/search":
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 body = self.rfile.read(content_length)
                 search_data = json.loads(body)
                 
-                url = f"{BRIXHUB_BASE}/search"
-                req = urllib.request.Request(url, 
-                    data=json.dumps(search_data).encode(),
-                    headers={
-                        "X-API-Key": BRIXHUB_API_KEY,
-                        "Content-Type": "application/json",
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-                    }
-                )
+                results = {"data": {}}
                 
-                with urllib.request.urlopen(req, timeout=10) as r:
-                    response_body = r.read()
+                # Lookup Discord ID
+                if "discord_id" in search_data and search_data["discord_id"]:
+                    discord_id = search_data["discord_id"]
+                    url = f"{CORDCAT_BASE}/api/v2/query/{discord_id}"
+                    req = urllib.request.Request(url, headers={
+                        "X-API-Key": CORDCAT_API_KEY,
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                    })
+                    try:
+                        with urllib.request.urlopen(req, timeout=10) as r:
+                            discord_data = json.loads(r.read().decode())
+                            results["data"]["discord"] = discord_data
+                    except Exception as e:
+                        results["data"]["discord"] = {"error": str(e)}
+                
+                # Lookup IP
+                if "ip" in search_data and search_data["ip"]:
+                    ip = search_data["ip"]
+                    url = f"{IPAPI_BASE}?query={ip}&fields=status,country,city,lat,lon,isp,org,as"
+                    req = urllib.request.Request(url, headers={
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                    })
+                    try:
+                        with urllib.request.urlopen(req, timeout=10) as r:
+                            ip_data = json.loads(r.read().decode())
+                            results["data"]["ip"] = ip_data
+                    except Exception as e:
+                        results["data"]["ip"] = {"error": str(e)}
                 
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.send_cors()
                 self.end_headers()
-                self.wfile.write(response_body)
+                self.wfile.write(json.dumps(results).encode())
                 
-            except urllib.error.HTTPError as e:
-                body = e.read()
-                self.send_response(e.code)
-                self.send_header("Content-Type", "application/json")
-                self.send_cors()
-                self.end_headers()
-                self.wfile.write(body)
             except Exception as e:
                 self._json_err(500, str(e))
             return
@@ -69,14 +81,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = self.path.split("?")[0]
 
-        # /api/lookup/email/<email> → proxy vers BrixHub
-        if path.startswith("/api/lookup/email/"):
-            email = path.split("/api/lookup/email/")[1].strip("/")
-            url = f"{BRIXHUB_BASE}/lookup/email/{email}"
+        # /api/lookup/discord/<id> → CordCat
+        if path.startswith("/api/lookup/discord/"):
+            discord_id = path.split("/api/lookup/discord/")[1].strip("/")
+            url = f"{CORDCAT_BASE}/api/v2/query/{discord_id}"
             req = urllib.request.Request(url, headers={
-                "X-API-Key": BRIXHUB_API_KEY,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                "Accept": "application/json"
+                "X-API-Key": CORDCAT_API_KEY,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
             })
             try:
                 with urllib.request.urlopen(req, timeout=10) as r:
@@ -97,42 +108,12 @@ class Handler(BaseHTTPRequestHandler):
                 self._json_err(500, str(e))
             return
 
-        # /api/lookup/phone/<phone> → proxy vers BrixHub
-        if path.startswith("/api/lookup/phone/"):
-            phone = path.split("/api/lookup/phone/")[1].strip("/")
-            url = f"{BRIXHUB_BASE}/lookup/phone/{phone}"
+        # /api/lookup/ip/<ip> → ip-api.com
+        if path.startswith("/api/lookup/ip/"):
+            ip = path.split("/api/lookup/ip/")[1].strip("/")
+            url = f"{IPAPI_BASE}?query={ip}&fields=status,country,city,lat,lon,isp,org,as"
             req = urllib.request.Request(url, headers={
-                "X-API-Key": BRIXHUB_API_KEY,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                "Accept": "application/json"
-            })
-            try:
-                with urllib.request.urlopen(req, timeout=10) as r:
-                    body = r.read()
-                self.send_response(200)
-                self.send_header("Content-Type", "application/json")
-                self.send_cors()
-                self.end_headers()
-                self.wfile.write(body)
-            except urllib.error.HTTPError as e:
-                body = e.read()
-                self.send_response(e.code)
-                self.send_header("Content-Type", "application/json")
-                self.send_cors()
-                self.end_headers()
-                self.wfile.write(body)
-            except Exception as e:
-                self._json_err(500, str(e))
-            return
-
-        # /api/lookup/iban/<iban> → proxy vers BrixHub
-        if path.startswith("/api/lookup/iban/"):
-            iban = path.split("/api/lookup/iban/")[1].strip("/")
-            url = f"{BRIXHUB_BASE}/lookup/iban/{iban}"
-            req = urllib.request.Request(url, headers={
-                "X-API-Key": BRIXHUB_API_KEY,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                "Accept": "application/json"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
             })
             try:
                 with urllib.request.urlopen(req, timeout=10) as r:
@@ -181,7 +162,8 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     print(f"\n  VoidTrace Proxy — http://localhost:{PORT}")
     print(f"  Fichier servi  : {SITE_FILE}")
-    print(f"  API BrixHub    : {BRIXHUB_API_KEY[:20]}...")
-    print(f"  Endpoints      : /api/search, /api/lookup/email, /api/lookup/phone, /api/lookup/iban")
+    print(f"  API CordCat    : {CORDCAT_API_KEY[:20]}...")
+    print(f"  IP API         : ip-api.com")
+    print(f"  Endpoints      : /api/search, /api/lookup/discord, /api/lookup/ip")
     print(f"  Ctrl+C pour arrêter\n")
     HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
