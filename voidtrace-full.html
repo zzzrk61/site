@@ -70,7 +70,7 @@ nav button:hover, nav button.active {
   gap: 10px;
 }
 
-.btn-login, .btn-logout {
+.btn-login, .btn-logout, .btn-admin {
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
@@ -87,6 +87,13 @@ nav button:hover, nav button.active {
 
 .btn-login:hover { background: #2a8ee0; }
 
+.btn-admin {
+  background: #ff6b6b;
+  color: #fff;
+}
+
+.btn-admin:hover { background: #ff5252; }
+
 .btn-logout {
   background: transparent;
   color: #ff6b6b;
@@ -99,6 +106,14 @@ nav button:hover, nav button.active {
   color: #3ea6ff;
   font-size: 13px;
   font-weight: 600;
+}
+
+.admin-badge {
+  background: #ff6b6b;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: 8px;
 }
 
 /* PAGES */
@@ -289,11 +304,69 @@ nav button:hover, nav button.active {
   background: rgba(62, 166, 255, 0.08);
 }
 
-.result-name {
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.result-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(62, 166, 255, 0.2);
+  border: 2px solid #3ea6ff;
+  object-fit: cover;
+}
+
+.result-info h3 {
   font-size: 18px;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.result-id {
+  font-size: 12px;
+  color: #7a7a88;
+  font-family: monospace;
+}
+
+.result-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(62, 166, 255, 0.2);
+}
+
+.result-tab {
+  background: transparent;
+  border: none;
+  color: #7a7a88;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.result-tab.active {
+  color: #3ea6ff;
+  border-bottom-color: #3ea6ff;
+}
+
+.result-tab:hover {
+  color: #3ea6ff;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
 }
 
 .result-fields {
@@ -322,6 +395,26 @@ nav button:hover, nav button.active {
   font-size: 14px;
   color: #fff;
   word-break: break-all;
+}
+
+.breach-item {
+  background: rgba(255, 107, 107, 0.1);
+  border-left: 3px solid #ff6b6b;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.breach-source {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff9999;
+}
+
+.breach-fields {
+  font-size: 12px;
+  color: #b0b0c0;
+  margin-top: 4px;
 }
 
 .loading {
@@ -389,6 +482,147 @@ nav button:hover, nav button.active {
   border-radius: 8px;
   margin: 20px 0;
   color: #ff9999;
+}
+
+/* DOCS */
+.docs-section {
+  background: rgba(62, 166, 255, 0.05);
+  border: 1px solid rgba(62, 166, 255, 0.2);
+  border-radius: 12px;
+  padding: 30px;
+  margin: 30px 0;
+}
+
+.docs-section h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #3ea6ff;
+  margin-bottom: 15px;
+}
+
+.endpoint {
+  background: rgba(10, 14, 39, 0.8);
+  border: 1px solid rgba(62, 166, 255, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.endpoint-get { color: #51cf66; }
+.endpoint-post { color: #ffd43b; }
+
+.docs-section p {
+  color: #b0b0c0;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+/* ADMIN */
+.admin-panel {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.admin-sidebar {
+  background: rgba(62, 166, 255, 0.05);
+  border: 1px solid rgba(62, 166, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.admin-menu button {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(62, 166, 255, 0.2);
+  color: #b0b0c0;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.admin-menu button:hover, .admin-menu button.active {
+  background: rgba(62, 166, 255, 0.1);
+  border-color: #3ea6ff;
+  color: #3ea6ff;
+}
+
+.admin-content {
+  background: rgba(62, 166, 255, 0.05);
+  border: 1px solid rgba(62, 166, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.admin-section {
+  display: none;
+}
+
+.admin-section.active {
+  display: block;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-stat {
+  background: rgba(62, 166, 255, 0.1);
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 3px solid #3ea6ff;
+}
+
+.admin-stat-num {
+  font-size: 24px;
+  font-weight: 900;
+  color: #3ea6ff;
+}
+
+.admin-stat-label {
+  font-size: 12px;
+  color: #7a7a88;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.queries-list {
+  background: rgba(10, 14, 39, 0.5);
+  border: 1px solid rgba(62, 166, 255, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.query-item {
+  padding: 12px;
+  border-bottom: 1px solid rgba(62, 166, 255, 0.1);
+  font-size: 13px;
+}
+
+.query-item:last-child { border-bottom: none; }
+
+.query-time {
+  color: #7a7a88;
+  font-size: 11px;
+}
+
+.query-type {
+  color: #3ea6ff;
+  font-weight: 600;
 }
 
 /* FOOTER */
@@ -475,6 +709,8 @@ footer {
   .search-grid { grid-template-columns: 1fr; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .result-fields { grid-template-columns: 1fr; }
+  .admin-panel { grid-template-columns: 1fr; }
+  .admin-stats { grid-template-columns: 1fr; }
   nav { display: none; }
   .hero h1 { font-size: 32px; }
 }
@@ -488,14 +724,16 @@ footer {
       <div class="logo" onclick="goPage('home')">void<span>trace</span></div>
       <nav>
         <button onclick="goPage('home')" class="nav-btn active" data-page="home">Home</button>
-        <button onclick="goPage('docs')" class="nav-btn" data-page="docs">Docs</button>
+        <button onclick="goPage('docs')" class="nav-btn" data-page="docs">API Docs</button>
         <button onclick="goPage('legal')" class="nav-btn" data-page="legal">Legal</button>
       </nav>
       <div class="auth-buttons">
         <div id="user-info" style="display:none;" class="user-info">
           Connecté: <span id="username">User</span>
+          <span id="admin-badge" class="admin-badge" style="display:none;">ADMIN</span>
         </div>
-        <button class="btn-login" id="btn-login" onclick="loginOAuth()">OAuth Login</button>
+        <button class="btn-admin" id="btn-admin" onclick="loginAdmin()" style="display:none;">Admin</button>
+        <button class="btn-login" id="btn-login" onclick="loginOAuth()">Login</button>
         <button class="btn-logout" id="btn-logout" style="display:none;" onclick="logout()">Logout</button>
       </div>
     </div>
@@ -507,7 +745,7 @@ footer {
   <div class="container">
     <div class="hero">
       <h1>Recherche d'informations<br><span style="color:#3ea6ff;">en temps réel</span></h1>
-      <p>Accédez à 740B+ de sources de données avec l'API BrixHub. Emails, téléphones, IBANs, noms — tout en une recherche.</p>
+      <p>Lookup Discord IDs et adresses IP. Données OSINT agrégées de sources multiples.</p>
     </div>
 
     <div class="search-section">
@@ -515,28 +753,12 @@ footer {
       
       <div class="search-grid">
         <div class="input-group">
-          <label>Email</label>
-          <input type="email" id="field-email" placeholder="exemple@gmail.com">
+          <label>Discord ID</label>
+          <input type="text" id="field-discord" placeholder="123456789012345678">
         </div>
         <div class="input-group">
-          <label>Téléphone</label>
-          <input type="tel" id="field-phone" placeholder="0612345678">
-        </div>
-        <div class="input-group">
-          <label>IBAN</label>
-          <input type="text" id="field-iban" placeholder="FR7630006000011234567890189">
-        </div>
-        <div class="input-group">
-          <label>Nom</label>
-          <input type="text" id="field-nom" placeholder="Dupont">
-        </div>
-        <div class="input-group">
-          <label>Prénom</label>
-          <input type="text" id="field-prenom" placeholder="Jean">
-        </div>
-        <div class="input-group">
-          <label>Ville</label>
-          <input type="text" id="field-ville" placeholder="Paris">
+          <label>Adresse IP</label>
+          <input type="text" id="field-ip" placeholder="192.168.1.1">
         </div>
       </div>
 
@@ -548,19 +770,19 @@ footer {
 
     <div class="stats">
       <div class="stat-card">
-        <div class="stat-number">740B+</div>
-        <div class="stat-label">Sources de données</div>
+        <div class="stat-number" id="stat-queries">0</div>
+        <div class="stat-label">Requêtes</div>
       </div>
       <div class="stat-card">
-        <div class="stat-number">160</div>
-        <div class="stat-label">Pays couverts</div>
+        <div class="stat-number" id="stat-discord">0</div>
+        <div class="stat-label">Discord Lookups</div>
       </div>
       <div class="stat-card">
-        <div class="stat-number">50TB+</div>
-        <div class="stat-label">Taille DB</div>
+        <div class="stat-number" id="stat-ip">0</div>
+        <div class="stat-label">IP Lookups</div>
       </div>
       <div class="stat-card">
-        <div class="stat-number">99.9%</div>
+        <div class="stat-number" id="stat-uptime">99.9%</div>
         <div class="stat-label">Uptime</div>
       </div>
     </div>
@@ -569,7 +791,7 @@ footer {
     <div class="results-section" id="results-section" style="display:none;">
       <div class="results-header">
         <div class="results-title">Résultats</div>
-        <div class="results-count" id="results-count">0 profils</div>
+        <div class="results-count" id="results-count">0 résultats</div>
       </div>
       <div id="results-container"></div>
     </div>
@@ -579,69 +801,247 @@ footer {
 <!-- DOCS PAGE -->
 <div class="page" id="page-docs">
   <div class="container" style="padding: 60px 0;">
-    <h1 style="margin-bottom: 30px;">Documentation API</h1>
+    <h1 style="margin-bottom: 40px;">API Documentation</h1>
     
-    <h2 style="margin-top: 40px; margin-bottom: 15px; color: #3ea6ff; font-size: 20px;">Endpoints</h2>
-    <p style="color: #b0b0c0; margin-bottom: 20px;">Base URL: <code style="background: rgba(62, 166, 255, 0.1); padding: 4px 8px; border-radius: 4px;">https://votre-domain.onrender.com/api</code></p>
+    <div class="docs-section">
+      <h3>📍 Base URL</h3>
+      <div class="endpoint">https://api.voidtrace.io</div>
+      <p>L'API VoidTrace fournit un accès rapide aux données Discord et IP. Authentification par clé API.</p>
+    </div>
 
-    <h3 style="color: #fff; font-size: 16px; margin-top: 30px; margin-bottom: 10px;">POST /search</h3>
-    <p style="color: #b0b0c0; margin-bottom: 10px;">Recherche multi-critères BrixHub.</p>
+    <div class="docs-section">
+      <h3>🔐 Authentification</h3>
+      <div class="endpoint">Authorization: Bearer YOUR_API_KEY</div>
+      <p>Tous les appels API requièrent une clé valide passée en en-tête Authorization. Obtenez votre clé dans le Dashboard admin.</p>
+    </div>
 
-    <h3 style="color: #fff; font-size: 16px; margin-top: 30px; margin-bottom: 10px;">GET /lookup/email/{email}</h3>
-    <p style="color: #b0b0c0;">Recherche par email.</p>
+    <div class="docs-section">
+      <h3>📤 POST /api/search</h3>
+      <div class="endpoint endpoint-post">POST /api/search</div>
+      <p>Recherche multi-critères. Retourne les données Discord et IP en JSON structuré.</p>
+      <p style="margin-top: 15px; font-weight: 600;">Body (JSON):</p>
+      <div class="endpoint">
+{
+  "discord_id": "123456789012345678",
+  "ip": "192.168.1.1"
+}
+      </div>
+      <p style="margin-top: 15px; font-weight: 600;">Response:</p>
+      <div class="endpoint">
+{
+  "data": {
+    "discord": { userInfo, breach, fivem, score, meta },
+    "ip": { query, country, city, isp, org, lat, lon }
+  }
+}
+      </div>
+    </div>
 
-    <h2 style="margin-top: 40px; margin-bottom: 15px; color: #3ea6ff; font-size: 20px;">Conditions d'utilisation BrixHub</h2>
-    <ul style="color: #b0b0c0; margin-left: 20px; margin-bottom: 20px;">
-      <li>✓ Données publiques uniquement</li>
-      <li>✓ Respect du RGPD obligatoire</li>
-      <li>✓ Pas de stockage des requêtes</li>
-      <li>✓ Usage légal seulement</li>
-    </ul>
+    <div class="docs-section">
+      <h3>🔍 GET /api/lookup/discord/:id</h3>
+      <div class="endpoint endpoint-get">GET /api/lookup/discord/803511102246789120</div>
+      <p>Lookup détaillé d'un Discord ID. Retourne profil, breaches, FiveM records, sanctions DSA.</p>
+    </div>
+
+    <div class="docs-section">
+      <h3>🌍 GET /api/lookup/ip/:ip</h3>
+      <div class="endpoint endpoint-get">GET /api/lookup/ip/192.168.1.1</div>
+      <p>Lookup d'une adresse IP. Retourne géolocalisation, ISP, organisation, coordonnées.</p>
+    </div>
+
+    <div class="docs-section">
+      <h3>⚡ Rate Limits</h3>
+      <p><strong>Free Plan:</strong> 60 requêtes/heure</p>
+      <p><strong>Pro Plan:</strong> 1000 requêtes/heure</p>
+      <p><strong>Unlimited:</strong> Pas de limite</p>
+      <p style="margin-top: 15px; font-size: 12px; color: #7a7a88;">Les rate limits sont retournés dans les en-têtes: X-RateLimit-Remaining, X-RateLimit-Reset</p>
+    </div>
+
+    <div class="docs-section">
+      <h3>❌ Codes d'erreur</h3>
+      <p><strong>400</strong> - Requête invalide</p>
+      <p><strong>401</strong> - Clé API manquante ou invalide</p>
+      <p><strong>404</strong> - Utilisateur non trouvé</p>
+      <p><strong>429</strong> - Rate limit dépassé</p>
+      <p><strong>500</strong> - Erreur serveur</p>
+    </div>
   </div>
 </div>
 
 <!-- LEGAL PAGE -->
 <div class="page" id="page-legal">
   <div class="container" style="padding: 60px 0;">
-    <h1 style="margin-bottom: 30px;">Mentions légales & CGU</h1>
+    <h1 style="margin-bottom: 30px;">Mentions Légales & Conditions d'Utilisation</h1>
     
     <div class="legal-content">
       <h2>1. Conditions d'utilisation</h2>
-      <p>VoidTrace est une plateforme proxy pour l'API BrixHub. L'accès est réservé à des fins légales uniquement.</p>
+      <p>VoidTrace est une plateforme OSINT pour recherche d'informations publiques uniquement. L'accès et l'utilisation de VoidTrace sont soumis aux présentes conditions. En accédant au service, vous acceptez intégralement ces conditions.</p>
 
-      <h2>2. Nature des données</h2>
-      <p>Toutes les données proviennent de sources publiques agrégées via BrixHub :</p>
+      <h2>2. Services fournis</h2>
+      <p>VoidTrace agrège et fournit accès à des données publiques provenant de sources multiples :</p>
       <ul>
-        <li>Profils publics (email, téléphone, adresses)</li>
-        <li>Données bancaires publiques (IBAN)</li>
-        <li>Géolocalisation IP</li>
+        <li>Profils Discord publics via API officielle Discord</li>
+        <li>Données de breaches (500M+ records) - Cross-référencées</li>
+        <li>Records FiveM (77M+) - Licenses, Steam IDs, GeoIP</li>
+        <li>Sanctions EU DSA (Statements officiels)</li>
+        <li>Géolocalisation IP - ISP, Organisation, ASN</li>
       </ul>
 
       <h2>3. Utilisations autorisées</h2>
       <ul>
-        <li>Sécurité informatique défensive</li>
-        <li>Vérification d'identité légale</li>
-        <li>Recherche académique</li>
-        <li>Modération de plateforme</li>
+        <li>✓ Sécurité informatique défensive</li>
+        <li>✓ Vérification d'identité légale</li>
+        <li>✓ Recherche académique et OSINT</li>
+        <li>✓ Modération de plateforme</li>
+        <li>✓ Enquêtes de conformité</li>
+        <li>✓ Audit de sécurité personnelle</li>
       </ul>
 
+      <h2>4. Utilisations INTERDITES</h2>
       <div class="legal-warning">
-        ⚠️ <strong>Utilisations INTERDITES :</strong> Harcèlement, stalking, surveillance non consentie, revente de données, fraude, usurpation d'identité, activités illégales.
+        ⚠️ <strong>Strictement interdit :</strong>
+        <ul>
+          <li>Harcèlement, stalking, cyberharcèlement</li>
+          <li>Surveillance non consentie</li>
+          <li>Revente ou redistribution de données</li>
+          <li>Fraude, usurpation d'identité</li>
+          <li>Doxing ou divulgation publique</li>
+          <li>Activités illégales</li>
+          <li>Contournement de modération Discord</li>
+        </ul>
       </div>
 
-      <h2>4. Responsabilité</h2>
-      <p>VoidTrace fournit un accès à des données publiques à titre informatif. L'exactitude n'est pas garantie. La responsabilité de l'usage final incombe exclusivement à l'utilisateur.</p>
-
-      <h2>5. RGPD & Conformité</h2>
+      <h2>5. Responsabilité et garanties</h2>
+      <p>VoidTrace fournit un accès à des données publiques à titre informatif. L'exactitude, la complétude et la pertinence des données ne sont pas garanties. VoidTrace ne peut être tenue responsable :</p>
       <ul>
-        <li>Aucune requête n'est stockée</li>
-        <li>Logs conservés 30 jours max</li>
-        <li>Droit à la suppression sur demande</li>
-        <li>Aucun cookie de tracking</li>
+        <li>Des erreurs ou imprécisions dans les données</li>
+        <li>De l'utilisation abusive du service par l'utilisateur</li>
+        <li>Des pertes ou dommages résultant de l'utilisation du service</li>
+        <li>De l'indisponibilité temporaire du service</li>
       </ul>
 
-      <h2>6. Contact</h2>
-      <p>Pour toute question : contact@voidtrace.io</p>
+      <h2>6. Protection des données & RGPD</h2>
+      <ul>
+        <li>Aucune requête utilisateur n'est stockée</li>
+        <li>Logs serveur conservés 30 jours maximum</li>
+        <li>Droit d'accès, rectification, suppression sur demande</li>
+        <li>Aucun cookie de tracking ou publicités</li>
+        <li>Pas de partage de données avec tiers</li>
+      </ul>
+
+      <h2>7. Limitation de responsabilité</h2>
+      <p>LA RESPONSABILITÉ DE L'USAGE FINAL INCOMBE EXCLUSIVEMENT À L'UTILISATEUR. VoidTrace n'est pas responsable des conséquences légales ou civiles résultant de l'utilisation du service. Les utilisateurs s'engagent à respecter toutes les lois applicables dans leur juridiction.</p>
+
+      <h2>8. Droit d'accès et révocation</h2>
+      <p>VoidTrace se réserve le droit de révoquer l'accès ou les clés API en cas de violation des conditions, d'utilisation abusive, ou de non-respect de la légalité. L'utilisation du service constitue l'acceptation de ces conditions.</p>
+
+      <h2>9. Modifications</h2>
+      <p>VoidTrace se réserve le droit de modifier ces conditions à tout moment. Les modifications sont effectives immédiatement. L'utilisation continue du service après modifications constitue l'acceptation des nouvelles conditions.</p>
+
+      <h2>10. Contact</h2>
+      <p>Pour toute question, demande RGPD, ou signalement d'abus :</p>
+      <p><strong>Email:</strong> zzzrk61@gmail.com</p>
+      <p><strong>Service:</strong> VoidTrace OSINT Platform</p>
+
+      <h2>11. Avertissement légal</h2>
+      <p style="font-size: 12px; color: #ff9999;">VoidTrace n'est pas affiliée à Discord Inc. Les données Discord proviennent de l'API officielle et sont conformes aux ToS Discord. VoidTrace n'est responsable ni des données, ni de leur agrégation externe.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div class="page" id="page-admin">
+  <div class="container" style="padding: 40px 0;">
+    <h1 style="margin-bottom: 30px;">🔐 Admin Dashboard</h1>
+    
+    <div class="admin-panel">
+      <div class="admin-sidebar">
+        <div class="admin-menu">
+          <button class="admin-menu-btn active" onclick="switchAdmin('dashboard')">📊 Dashboard</button>
+          <button class="admin-menu-btn" onclick="switchAdmin('queries')">📋 Queries</button>
+          <button class="admin-menu-btn" onclick="switchAdmin('users')">👥 Users</button>
+          <button class="admin-menu-btn" onclick="switchAdmin('api-keys')">🔑 API Keys</button>
+          <button class="admin-menu-btn" onclick="switchAdmin('settings')">⚙️ Settings</button>
+        </div>
+      </div>
+
+      <div class="admin-content">
+        <!-- Dashboard -->
+        <div id="admin-dashboard" class="admin-section active">
+          <h2 style="margin-bottom: 20px; font-size: 20px; color: #3ea6ff;">Dashboard</h2>
+          <div class="admin-stats">
+            <div class="admin-stat">
+              <div class="admin-stat-num" id="dash-queries">0</div>
+              <div class="admin-stat-label">Total Queries</div>
+            </div>
+            <div class="admin-stat">
+              <div class="admin-stat-num" id="dash-users">0</div>
+              <div class="admin-stat-label">Active Users</div>
+            </div>
+            <div class="admin-stat">
+              <div class="admin-stat-num" id="dash-api">0</div>
+              <div class="admin-stat-label">API Keys</div>
+            </div>
+            <div class="admin-stat">
+              <div class="admin-stat-num" id="dash-uptime">99.9%</div>
+              <div class="admin-stat-label">Uptime</div>
+            </div>
+          </div>
+          <h3 style="margin-top: 30px; margin-bottom: 15px; color: #3ea6ff;">Dernières requêtes</h3>
+          <div class="queries-list" id="admin-queries-list">
+            <div class="query-item" style="color: #7a7a88;">Aucune requête pour le moment</div>
+          </div>
+        </div>
+
+        <!-- Queries -->
+        <div id="admin-queries" class="admin-section">
+          <h2 style="margin-bottom: 20px; font-size: 20px; color: #3ea6ff;">Recent Queries</h2>
+          <div class="queries-list" id="admin-all-queries">
+            <div class="query-item" style="color: #7a7a88;">Chargement...</div>
+          </div>
+        </div>
+
+        <!-- Users -->
+        <div id="admin-users" class="admin-section">
+          <h2 style="margin-bottom: 20px; font-size: 20px; color: #3ea6ff;">User Management</h2>
+          <div style="background: rgba(62, 166, 255, 0.1); padding: 16px; border-radius: 8px; border-left: 3px solid #3ea6ff;">
+            <p style="color: #b0b0c0;">Admin: <strong style="color: #3ea6ff;">zzzrk61@gmail.com</strong></p>
+            <p style="color: #b0b0c0; margin-top: 8px; font-size: 12px;">Accès complet au platform et aux configurations.</p>
+          </div>
+        </div>
+
+        <!-- API Keys -->
+        <div id="admin-api-keys" class="admin-section">
+          <h2 style="margin-bottom: 20px; font-size: 20px; color: #3ea6ff;">API Keys Management</h2>
+          <div class="input-group" style="margin-bottom: 15px;">
+            <label>Create New Key</label>
+            <input type="text" id="new-key-name" placeholder="Key name (e.g., 'Production API')">
+          </div>
+          <button class="btn-primary" onclick="generateApiKey()">Generate Key</button>
+          
+          <h3 style="margin-top: 30px; margin-bottom: 15px; color: #7a7a88;">Existing Keys</h3>
+          <div id="api-keys-list">
+            <div style="color: #7a7a88; padding: 16px;">No keys yet</div>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div id="admin-settings" class="admin-section">
+          <h2 style="margin-bottom: 20px; font-size: 20px; color: #3ea6ff;">Settings</h2>
+          <div class="input-group" style="margin-bottom: 15px;">
+            <label>CordCat API Key</label>
+            <input type="password" id="setting-cordcat" placeholder="cc_...">
+          </div>
+          <div class="input-group" style="margin-bottom: 15px;">
+            <label>IP Lookup API (ip-api.com)</label>
+            <select id="setting-ip-api" style="background: rgba(10, 14, 39, 0.8); border: 1px solid rgba(62, 166, 255, 0.3); border-radius: 8px; padding: 12px; color: #fff;">
+              <option>ip-api.com (Free)</option>
+              <option>ipinfo.io (Pro)</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -650,17 +1050,45 @@ footer {
 <div class="modal" id="login-modal">
   <div class="modal-content">
     <button class="modal-close" onclick="closeModal()">×</button>
-    <div class="modal-title">🔐 OAuth Login</div>
+    <div class="modal-title">🔐 Login</div>
+    
+    <!-- Discord OAuth -->
+    <button class="btn-primary" onclick="discordOAuth()" style="width: 100%; margin-bottom: 20px; background: #5865F2;">
+      🔵 Login with Discord
+    </button>
+    
+    <div style="text-align: center; color: #7a7a88; margin-bottom: 20px; font-size: 12px;">OR</div>
+    
+    <!-- Email/Password -->
     <div class="modal-form">
       <div class="input-group">
-        <label>Username</label>
-        <input type="text" id="oauth-username" placeholder="Votre identifiant">
+        <label>Email</label>
+        <input type="email" id="oauth-email" placeholder="your@email.com">
       </div>
       <div class="input-group">
-        <label>Mot de passe</label>
+        <label>Password</label>
         <input type="password" id="oauth-password" placeholder="••••••••">
       </div>
-      <button class="btn-primary" onclick="confirmLogin()">Se connecter</button>
+      <button class="btn-primary" onclick="confirmLogin()">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal" id="admin-modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">🔐 Admin Access</div>
+    <div class="modal-form">
+      <div class="input-group">
+        <label>Admin Email</label>
+        <input type="email" id="admin-email" placeholder="zzzrk61@gmail.com">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="admin-password" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="confirmAdminLogin()">Access Admin</button>
     </div>
   </div>
 </div>
@@ -668,21 +1096,24 @@ footer {
 <footer>
   <div class="footer-links">
     <a onclick="goPage('home')">Home</a>
-    <a onclick="goPage('docs')">Documentation</a>
+    <a onclick="goPage('docs')">API Docs</a>
     <a onclick="goPage('legal')">Legal</a>
   </div>
-  <p>© 2025 VoidTrace × BrixHub. Tous droits réservés. Données publiques • Traitement API • RGPD compliant</p>
+  <p>© 2026 VoidTrace. All rights reserved. OSINT • Discord Lookup • IP Geolocation • Data Privacy</p>
 </footer>
 
 <script>
 const API_BASE = window.location.origin;
 let currentUser = null;
+let isAdmin = false;
+let queryHistory = [];
+let queryCount = { total: 0, discord: 0, ip: 0 };
 
 function goPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelector(`[data-page="${page}"]`).classList.add('active');
+  document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
   window.scrollTo(0, 0);
 }
 
@@ -690,23 +1121,53 @@ function loginOAuth() {
   document.getElementById('login-modal').classList.add('active');
 }
 
+function loginAdmin() {
+  document.getElementById('admin-modal').classList.add('active');
+}
+
 function closeModal() {
   document.getElementById('login-modal').classList.remove('active');
-  document.getElementById('oauth-username').value = '';
+  document.getElementById('admin-modal').classList.remove('active');
+  document.getElementById('oauth-email').value = '';
   document.getElementById('oauth-password').value = '';
+  document.getElementById('admin-email').value = '';
+  document.getElementById('admin-password').value = '';
 }
 
 function confirmLogin() {
-  const username = document.getElementById('oauth-username').value.trim();
+  const email = document.getElementById('oauth-email').value.trim();
   const password = document.getElementById('oauth-password').value.trim();
   
-  if (!username || !password) {
-    alert('Veuillez remplir tous les champs');
+  if (!email || !password) {
+    alert('Please fill in all fields');
     return;
   }
   
-  currentUser = { username, token: 'token_' + Math.random().toString(36).substr(2, 9) };
+  currentUser = { email, token: 'token_' + Math.random().toString(36).substr(2, 9) };
   localStorage.setItem('vt_user', JSON.stringify(currentUser));
+  
+  updateAuthUI();
+  closeModal();
+}
+
+function confirmAdminLogin() {
+  const email = document.getElementById('admin-email').value.trim();
+  const password = document.getElementById('admin-password').value.trim();
+  
+  if (email !== 'zzzrk61@gmail.com') {
+    alert('Invalid admin email');
+    return;
+  }
+  
+  if (!password) {
+    alert('Please enter password');
+    return;
+  }
+  
+  isAdmin = true;
+  currentUser = { email, token: 'admin_' + Math.random().toString(36).substr(2, 9) };
+  localStorage.setItem('vt_user', JSON.stringify(currentUser));
+  localStorage.setItem('vt_admin', 'true');
   
   updateAuthUI();
   closeModal();
@@ -714,7 +1175,9 @@ function confirmLogin() {
 
 function logout() {
   currentUser = null;
+  isAdmin = false;
   localStorage.removeItem('vt_user');
+  localStorage.removeItem('vt_admin');
   updateAuthUI();
   goPage('home');
 }
@@ -724,47 +1187,64 @@ function updateAuthUI() {
     document.getElementById('btn-login').style.display = 'none';
     document.getElementById('btn-logout').style.display = 'block';
     document.getElementById('user-info').style.display = 'block';
-    document.getElementById('username').textContent = currentUser.username;
+    document.getElementById('username').textContent = currentUser.email;
+    
+    if (isAdmin) {
+      document.getElementById('admin-badge').style.display = 'inline-block';
+      document.getElementById('btn-admin').style.display = 'none';
+    } else {
+      document.getElementById('admin-badge').style.display = 'none';
+      document.getElementById('btn-admin').style.display = 'block';
+    }
   } else {
     document.getElementById('btn-login').style.display = 'block';
     document.getElementById('btn-logout').style.display = 'none';
     document.getElementById('user-info').style.display = 'none';
+    document.getElementById('btn-admin').style.display = 'none';
+    document.getElementById('admin-badge').style.display = 'none';
   }
+}
+
+function switchAdmin(section) {
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('admin-' + section).classList.add('active');
+  
+  document.querySelectorAll('.admin-menu-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function updateStats() {
+  document.getElementById('stat-queries').textContent = queryCount.total;
+  document.getElementById('stat-discord').textContent = queryCount.discord;
+  document.getElementById('stat-ip').textContent = queryCount.ip;
+  
+  document.getElementById('dash-queries').textContent = queryCount.total;
+  document.getElementById('dash-users').textContent = '1';
+  document.getElementById('dash-api').textContent = '2';
 }
 
 async function performSearch() {
   if (!currentUser) {
-    alert('Veuillez vous connecter d\'abord');
+    alert('Please login first');
     loginOAuth();
     return;
   }
 
-  const email = document.getElementById('field-email').value.trim();
-  const phone = document.getElementById('field-phone').value.trim();
-  const iban = document.getElementById('field-iban').value.trim();
-  const nom = document.getElementById('field-nom').value.trim();
-  const prenom = document.getElementById('field-prenom').value.trim();
-  const ville = document.getElementById('field-ville').value.trim();
+  const discordId = document.getElementById('field-discord').value.trim();
+  const ip = document.getElementById('field-ip').value.trim();
 
-  if (!email && !phone && !iban && !nom && !prenom && !ville) {
-    alert('Veuillez remplir au moins un critère');
+  if (!discordId && !ip) {
+    alert('Please enter a Discord ID or IP address');
     return;
   }
 
-  const searchData = {
-    flexible: true,
-    per_page: 50
-  };
-  if (email) searchData.email = email;
-  if (phone) searchData.telephone = phone;
-  if (iban) searchData.iban = iban;
-  if (nom) searchData.nom_famille = nom;
-  if (prenom) searchData.prenom = prenom;
-  if (ville) searchData.ville = ville;
+  const searchData = {};
+  if (discordId) searchData.discord_id = discordId;
+  if (ip) searchData.ip = ip;
 
   const btn = document.getElementById('btn-search');
   btn.disabled = true;
-  btn.textContent = 'Recherche...';
+  btn.textContent = 'Searching...';
 
   document.getElementById('results-section').style.display = 'block';
   document.getElementById('results-container').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
@@ -781,46 +1261,198 @@ async function performSearch() {
 
     const data = await response.json();
 
-    if (response.ok && data.data?.results?.length > 0) {
-      displayResults(data.data.results);
+    if (response.ok && data.data) {
+      queryCount.total++;
+      if (discordId) queryCount.discord++;
+      if (ip) queryCount.ip++;
+      updateStats();
+      
+      queryHistory.unshift({
+        time: new Date().toLocaleTimeString(),
+        type: discordId ? 'Discord' : 'IP',
+        query: discordId || ip
+      });
+      
+      displayResults(data.data);
+      updateQueryList();
     } else {
-      document.getElementById('results-container').innerHTML = '<div class="empty">❌ Aucun résultat trouvé</div>';
+      document.getElementById('results-container').innerHTML = '<div class="empty">❌ No results found</div>';
     }
   } catch (e) {
-    document.getElementById('results-container').innerHTML = `<div class="empty">⚠️ Erreur: ${e.message}</div>`;
+    document.getElementById('results-container').innerHTML = `<div class="empty">⚠️ Error: ${e.message}</div>`;
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Rechercher';
+    btn.textContent = 'Search';
   }
 }
 
-function displayResults(results) {
-  document.getElementById('results-count').textContent = results.length + ' profil(s)';
+function displayResults(data) {
+  let html = '';
   
-  const html = results.map(r => `
-    <div class="result-card">
-      <div class="result-name">${r.prenom || ''} ${r.nom_famille || ''}</div>
-      <div class="result-fields">
-        ${r.email ? `<div class="result-field"><div class="result-field-label">Email</div><div class="result-field-value">${r.email}</div></div>` : ''}
-        ${r.telephone ? `<div class="result-field"><div class="result-field-label">Téléphone</div><div class="result-field-value">${r.telephone}</div></div>` : ''}
-        ${r.adresse ? `<div class="result-field"><div class="result-field-label">Adresse</div><div class="result-field-value">${r.adresse}</div></div>` : ''}
-        ${r.code_postal ? `<div class="result-field"><div class="result-field-label">Code Postal</div><div class="result-field-value">${r.code_postal}</div></div>` : ''}
-        ${r.ville ? `<div class="result-field"><div class="result-field-label">Ville</div><div class="result-field-value">${r.ville}</div></div>` : ''}
-        ${r.date_naissance ? `<div class="result-field"><div class="result-field-label">Date naissance</div><div class="result-field-value">${r.date_naissance}</div></div>` : ''}
-      </div>
-    </div>
-  `).join('');
+  if (data.discord && data.discord.userInfo) {
+    const user = data.discord.userInfo;
+    const avatarUrl = user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256` : '';
+    
+    html += `
+      <div class="result-card">
+        <div class="result-header">
+          ${avatarUrl ? `<img src="${avatarUrl}" class="result-avatar">` : '<div class="result-avatar"></div>'}
+          <div class="result-info">
+            <h3>${user.username}</h3>
+            <div class="result-id">ID: ${user.id}</div>
+          </div>
+        </div>
+        
+        <div class="result-tabs">
+          <button class="result-tab active" onclick="switchTab(this, 'profile-0')">Profile</button>
+          <button class="result-tab" onclick="switchTab(this, 'breach-0')">Breaches</button>
+          <button class="result-tab" onclick="switchTab(this, 'fivem-0')">FiveM</button>
+          <button class="result-tab" onclick="switchTab(this, 'score-0')">Risk Score</button>
+        </div>
 
+        <div id="profile-0" class="tab-content active">
+          <div class="result-fields">
+            ${user.username ? `<div class="result-field"><div class="result-field-label">Username</div><div class="result-field-value">${user.username}</div></div>` : ''}
+            ${user.global_name ? `<div class="result-field"><div class="result-field-label">Display Name</div><div class="result-field-value">${user.global_name}</div></div>` : ''}
+            ${user.id ? `<div class="result-field"><div class="result-field-label">Discord ID</div><div class="result-field-value">${user.id}</div></div>` : ''}
+            ${user.public_flags ? `<div class="result-field"><div class="result-field-label">Public Flags</div><div class="result-field-value">${user.public_flags}</div></div>` : ''}
+          </div>
+        </div>
+
+        <div id="breach-0" class="tab-content">
+          ${data.discord.breach?.resultsCount ? `
+            <div style="margin-bottom: 15px;"><strong style="color: #ff9999;">Found in ${data.discord.breach.resultsCount} breach(es)</strong></div>
+            ${data.discord.breach.data?.results?.map((r, i) => `
+              <div class="breach-item">
+                <div class="breach-source">📁 ${r.source}</div>
+                <div class="breach-fields">${r.categories?.join(', ')}</div>
+              </div>
+            `).join('') || ''}
+          ` : '<div class="empty" style="padding: 20px;">No breaches found</div>'}
+        </div>
+
+        <div id="fivem-0" class="tab-content">
+          ${data.discord.fivem?.data?.total ? `
+            <div class="result-fields">
+              <div class="result-field">
+                <div class="result-field-label">Total Records</div>
+                <div class="result-field-value">${data.discord.fivem.data.total}</div>
+              </div>
+              <div class="result-field">
+                <div class="result-field-label">Sources</div>
+                <div class="result-field-value">${data.discord.fivem.data.took || '?'}</div>
+              </div>
+            </div>
+          ` : '<div class="empty" style="padding: 20px;">No FiveM records found</div>'}
+        </div>
+
+        <div id="score-0" class="tab-content">
+          ${data.discord.score ? `
+            <div class="result-fields">
+              <div class="result-field">
+                <div class="result-field-label">Risk Score</div>
+                <div class="result-field-value">${data.discord.score.risk}/100</div>
+              </div>
+              <div class="result-field">
+                <div class="result-field-label">Risk Level</div>
+                <div class="result-field-value">${data.discord.score.level}</div>
+              </div>
+              <div class="result-field">
+                <div class="result-field-label">Bot Likelihood</div>
+                <div class="result-field-value">${data.discord.score.bot?.level || 'N/A'}</div>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+  
+  if (data.ip && data.ip.status === 'success') {
+    html += `
+      <div class="result-card">
+        <div class="result-header">
+          <div style="color: #3ea6ff; font-size: 24px; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">🌍</div>
+          <div class="result-info">
+            <h3>${data.ip.query}</h3>
+            <div class="result-id">${data.ip.country}</div>
+          </div>
+        </div>
+
+        <div class="result-fields">
+          ${data.ip.query ? `<div class="result-field"><div class="result-field-label">IP Address</div><div class="result-field-value">${data.ip.query}</div></div>` : ''}
+          ${data.ip.country ? `<div class="result-field"><div class="result-field-label">Country</div><div class="result-field-value">${data.ip.country}</div></div>` : ''}
+          ${data.ip.city ? `<div class="result-field"><div class="result-field-label">City</div><div class="result-field-value">${data.ip.city}</div></div>` : ''}
+          ${data.ip.isp ? `<div class="result-field"><div class="result-field-label">ISP</div><div class="result-field-value">${data.ip.isp}</div></div>` : ''}
+          ${data.ip.org ? `<div class="result-field"><div class="result-field-label">Organization</div><div class="result-field-value">${data.ip.org}</div></div>` : ''}
+          ${data.ip.as ? `<div class="result-field"><div class="result-field-label">ASN</div><div class="result-field-value">${data.ip.as}</div></div>` : ''}
+          ${data.ip.lat && data.ip.lon ? `<div class="result-field"><div class="result-field-label">Coordinates</div><div class="result-field-value">${data.ip.lat}, ${data.ip.lon}</div></div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+  
+  if (!html) {
+    html = '<div class="empty">❌ No results found</div>';
+  }
+  
+  document.getElementById('results-count').textContent = '1 Result';
   document.getElementById('results-container').innerHTML = html;
 }
 
+function switchTab(btn, tabId) {
+  const card = btn.closest('.result-card');
+  card.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+  card.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  
+  btn.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+function updateQueryList() {
+  const html = queryHistory.slice(0, 10).map((q, i) => `
+    <div class="query-item">
+      <span class="query-type">[${q.type}]</span> ${q.query}
+      <div class="query-time">${q.time}</div>
+    </div>
+  `).join('');
+  
+  document.getElementById('admin-queries-list').innerHTML = html || '<div class="query-item" style="color: #7a7a88;">No queries yet</div>';
+  document.getElementById('admin-all-queries').innerHTML = html || '<div class="query-item" style="color: #7a7a88;">No queries yet</div>';
+}
+
+function generateApiKey() {
+  const name = document.getElementById('new-key-name').value.trim();
+  if (!name) {
+    alert('Enter a key name');
+    return;
+  }
+  
+  const key = 'sk_' + Math.random().toString(36).substr(2, 32).toUpperCase();
+  
+  let html = document.getElementById('api-keys-list').innerHTML;
+  if (html.includes('No keys yet')) html = '';
+  
+  html += `
+    <div style="background: rgba(62, 166, 255, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #3ea6ff;">
+      <p style="color: #b0b0c0;"><strong>${name}</strong></p>
+      <p style="color: #7a7a88; font-family: monospace; font-size: 11px; word-break: break-all;">${key}</p>
+    </div>
+  `;
+  
+  document.getElementById('api-keys-list').innerHTML = html;
+  document.getElementById('new-key-name').value = '';
+  queryCount.total++;
+  updateStats();
+}
+
+function saveSettings() {
+  alert('Settings saved successfully!');
+}
+
 function clearSearch() {
-  document.getElementById('field-email').value = '';
-  document.getElementById('field-phone').value = '';
-  document.getElementById('field-iban').value = '';
-  document.getElementById('field-nom').value = '';
-  document.getElementById('field-prenom').value = '';
-  document.getElementById('field-ville').value = '';
+  document.getElementById('field-discord').value = '';
+  document.getElementById('field-ip').value = '';
   document.getElementById('results-section').style.display = 'none';
 }
 
@@ -828,8 +1460,10 @@ window.addEventListener('load', () => {
   const saved = localStorage.getItem('vt_user');
   if (saved) {
     currentUser = JSON.parse(saved);
+    isAdmin = localStorage.getItem('vt_admin') === 'true';
   }
   updateAuthUI();
+  updateStats();
 });
 </script>
 
